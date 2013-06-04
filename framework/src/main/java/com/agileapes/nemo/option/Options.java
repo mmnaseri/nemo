@@ -18,6 +18,9 @@ package com.agileapes.nemo.option;
 import java.util.*;
 
 /**
+ * This class encapsulates the process of mapping the arguments String array to a set of
+ * meaningful pairs
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 16:35)
  */
@@ -44,6 +47,9 @@ public class Options {
         return flags;
     }
 
+    /**
+     * The builder will build an option representation for the given list of arguments
+     */
     public static class Builder {
 
         private final List<String> arguments;

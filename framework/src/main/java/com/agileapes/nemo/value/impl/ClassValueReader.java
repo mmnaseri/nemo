@@ -22,6 +22,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ClassUtils;
 
 /**
+ * This value reader will take as input the fully qualified name of a class within the classpath
+ * as seen by the {@link #classLoader} and return the class object
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:08)
  */

@@ -21,6 +21,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation will mark setter methods that are bound to outside properties.
+ * Property names are extracted from the setters' names. Aliases can be added through
+ * {@link #alias()}
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 17:29)
  */
@@ -28,8 +32,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Option {
 
+    /**
+     * The single character alias for the given property
+     */
     char alias() default ' ';
 
+    /**
+     * A tag signifying whether this option has to be set before the action can be performed
+     */
     boolean required() default false;
 
 }

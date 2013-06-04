@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This is a utility class for facilitating certain aspects of working with Reflection
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:21)
  */
@@ -27,6 +29,13 @@ public class ReflectionUtils {
 
     private ReflectionUtils() {}
 
+    /**
+     * This method will return all methods matching the given filter. The methods will be
+     * ordered by precedence so that overriding methods occur sooner in the returned array.
+     * @param type            the target class to be scanned for methods
+     * @param methodFilter    the filter applied to methods
+     * @return an array of matching methods
+     */
     public static Method[] getMethods(Class type, Filter<Method> methodFilter) {
         if (type == null || methodFilter == null) {
             throw new NullPointerException();

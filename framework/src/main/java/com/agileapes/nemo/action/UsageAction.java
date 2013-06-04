@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * This action will simply list all the possible targets to this application
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:35)
  */

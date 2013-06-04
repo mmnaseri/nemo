@@ -18,6 +18,9 @@ package com.agileapes.nemo.action;
 import com.agileapes.nemo.api.Option;
 
 /**
+ * This action will simply print out an about message that will introduce Nemo&copy; as the
+ * underlying framework.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 18:27)
  */

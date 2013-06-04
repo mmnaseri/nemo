@@ -16,13 +16,28 @@
 package com.agileapes.nemo.value;
 
 /**
+ * ValueReaders are a way for the framework to read values from their String representation
+ * and return the actual type object.
+ *
+ * For value readers to be recognized and picked up by the framework, you will have to add
+ * them as singleton beans to Spring's application context under {@code /nemo/*.xml}.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 18:57)
  */
 public interface ValueReader {
 
+    /**
+     * @return an array of all the types recognized by this reader
+     */
     Class[] getTypes();
 
+    /**
+     * @param text    the textual representation of the data
+     * @param type    the desired type of the data
+     * @param <E>     actual data type parameter
+     * @return the converted value
+     */
     <E> E read(String text, Class<E> type);
 
 }

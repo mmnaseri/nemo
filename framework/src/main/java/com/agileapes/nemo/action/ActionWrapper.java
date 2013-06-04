@@ -27,6 +27,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * The action wrapper carries the duty of converting String values to object values using
+ * {@link com.agileapes.nemo.value.ValueReader}s. This class is basically the glue which
+ * holds the underlying system together.
+ * 
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 18:54)
  */
@@ -39,6 +43,12 @@ public class ActionWrapper {
     private final Set<String> required = new HashSet<String>();
     private final Map<String, String> aliases = new HashMap<String, String>();
 
+    /**
+     * This constructor accepts the action to be wrapped and the instance of
+     * {@link ValueReaderContext} currently being used by the framework.
+     * @param action           the action
+     * @param readerContext    the value reader context
+     */
     public ActionWrapper(Action action, ValueReaderContext readerContext) {
         this.action = action;
         this.readerContext = readerContext;
@@ -63,10 +73,20 @@ public class ActionWrapper {
         }
     }
 
+    /**
+     * This assumes that a flag of the given name (or alias) exists and that it should be
+     * set to true.
+     * @param flag    the alias or name of the flag
+     */
     public void setFlag(String flag) {
         setOption(flag, TRUE);
     }
 
+    /**
+     * This method sets the value of the given option, if it exists
+     * @param option    the option name or alias
+     * @param value     the textual representation of the value it should take
+     */
     public void setOption(String option, String value) {
         if (!setters.containsKey(option)) {
             if (aliases.containsKey(option)) {
@@ -85,6 +105,11 @@ public class ActionWrapper {
         }
     }
 
+    /**
+     * This method will delegate the performing of the action to the wrapped action instance,
+     * while checking for all the required options to be set.
+     * @throws Exception
+     */
     public void perform() throws Exception {
         if (!required.isEmpty()) {
             throw new IllegalStateException("Required options missing value: " + required);
@@ -92,6 +117,11 @@ public class ActionWrapper {
         action.perform();
     }
 
+    /**
+     * This method returns the setter methods which will give access to the property setters
+     * corresponding given options
+     * @return a map from option <em>names</em> to setter methods
+     */
     public Map<String, Method> getSetters() {
         return setters;
     }

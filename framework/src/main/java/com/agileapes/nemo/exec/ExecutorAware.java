@@ -16,6 +16,9 @@
 package com.agileapes.nemo.exec;
 
 /**
+ * This interface adds inversion of control to the framework so that actions (and other beans)
+ * can access the executor
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 16:37)
  */

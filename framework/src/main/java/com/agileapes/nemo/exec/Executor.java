@@ -27,12 +27,23 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
+ * The executor is the starting point of the operation chain. You can run your application by
+ * instantiating the {@link Executor} inside your {@code main} method:
+ * <p><code>public static void main(String[] args) throws Exception {<br/>
+ * &nbsp;&nbsp;&nbsp;&nbsp;new Executor(args).execute();<br/>
+ * }</code></p>
+ * The same can be achieved using {@link #execute(String...)}:
+ * <p><code>public static void main(String[] args) throws Exception {<br/>
+ * &nbsp;&nbsp;&nbsp;&nbsp;Executor.execute(args);<br/>
+ * }</code></p>
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 16:35)
  */
@@ -47,10 +58,16 @@ public class Executor implements BeanPostProcessor {
         this.args = args;
     }
 
+    /**
+     * @return the set of actions discovered by the framework
+     */
     public Set<Action> getActions() {
         return Collections.unmodifiableSet(actions);
     }
 
+    /**
+     * @return the default action set by the developer or {@code null} if none are available
+     */
     public Action getDefaultAction() {
         return defaultAction;
     }
@@ -68,7 +85,13 @@ public class Executor implements BeanPostProcessor {
         return bean;
     }
 
-    private ApplicationContext prepareContext() {
+    /**
+     * This method will load the application context and expose the executor via {@link ExecutorAware}
+     */
+    private void prepareContext() {
+        if (this.context != null) {
+            throw new IllegalStateException("You cannot execute the same context twice.");
+        }
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/*.xml");
         context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
             @Override
@@ -77,10 +100,13 @@ public class Executor implements BeanPostProcessor {
             }
         });
         context.refresh();
-        return context;
+        this.context = context;
     }
 
-    private void prepareActions(ApplicationContext context) {
+    /**
+     * This internal method will load actions from the Application context
+     */
+    private void prepareActions() {
         final String[] names = context.getBeanNamesForType(Action.class);
         for (String name : names) {
             if (context.isSingleton(name)) {
@@ -97,12 +123,10 @@ public class Executor implements BeanPostProcessor {
         }
     }
 
-    public void execute() throws Exception {
-        if (context != null) {
-            throw new IllegalStateException("You cannot execute the same context twice.");
-        }
-        context = prepareContext();
-        prepareActions(context);
+    /**
+     * @return the execution for the current arguments
+     */
+    public Execution getExecution() {
         Action target = null;
         String[] arguments;
         if (args.length == 0 || args[0].startsWith("-")) {
@@ -124,21 +148,43 @@ public class Executor implements BeanPostProcessor {
             arguments = new String[args.length - 1];
             System.arraycopy(args, 1, arguments, 0, args.length - 1);
         }
-        perform(new Execution(target, arguments));
+        return new Execution(target, new Options.Builder(Arrays.asList(arguments)).build());
     }
 
+    /**
+     * This method will perform the given execution
+     * @param execution    an encapsulation of the desired execution
+     * @throws Exception
+     */
     public void perform(Execution execution) throws Exception {
-        final Options options = new Options.Builder(execution.getArguments()).build();
         final ActionWrapper wrapper = new ActionWrapper(execution.getAction(), context.getBean(ValueReaderContext.class));
-        for (String flag : options.getFlags()) {
+        for (String flag : execution.getOptions().getFlags()) {
             wrapper.setFlag(flag);
         }
-        for (Map.Entry<String, String> entry : options.getOptions().entrySet()) {
+        for (Map.Entry<String, String> entry : execution.getOptions().getOptions().entrySet()) {
             wrapper.setOption(entry.getKey(), entry.getValue());
         }
         wrapper.perform();
     }
 
+    /**
+     * This method will execute the application based on the given arguments. As execution only
+     * holds meaning for a single time, calling execute more than once will result in an
+     * {@link IllegalStateException}.
+     * @throws Exception
+     */
+    public void execute() throws Exception {
+        prepareContext();
+        prepareActions();
+        perform(getExecution());
+    }
+
+    /**
+     * This shorthand method is only made available so that by statically importing it
+     * your code will look less cluttered.
+     * @param args    the arguments to the application as they are
+     * @throws Exception
+     */
     public static void execute(String ... args) throws Exception {
         new Executor(args).execute();
     }

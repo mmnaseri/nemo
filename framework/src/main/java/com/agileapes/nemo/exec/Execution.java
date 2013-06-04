@@ -16,34 +16,30 @@
 package com.agileapes.nemo.exec;
 
 import com.agileapes.nemo.action.Action;
-
-import java.util.Arrays;
-import java.util.List;
+import com.agileapes.nemo.option.Options;
 
 /**
+ * An execution is the abstraction of coupling actions and arguments
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 18:18)
  */
 public class Execution {
 
     private final Action action;
-    private final List<String> arguments;
+    private final Options options;
 
-    public Execution(Action action, String... arguments) {
-        this(action, Arrays.asList(arguments));
-    }
-
-    public Execution(Action action, List<String> arguments) {
+    public Execution(Action action, Options options) {
         this.action = action;
-        this.arguments = arguments;
+        this.options = options;
     }
 
     Action getAction() {
         return action;
     }
 
-    List<String> getArguments() {
-        return arguments;
+    public Options getOptions() {
+        return options;
     }
 
 }

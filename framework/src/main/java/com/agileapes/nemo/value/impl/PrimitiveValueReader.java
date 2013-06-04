@@ -18,6 +18,9 @@ package com.agileapes.nemo.value.impl;
 import com.agileapes.nemo.value.ValueReader;
 
 /**
+ * This value reader will handle all 7 primitive types within Java (and their object-oriented
+ * counterparts) plus the String data type.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 18:59)
  */

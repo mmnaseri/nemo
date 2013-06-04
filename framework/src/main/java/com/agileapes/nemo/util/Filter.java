@@ -16,11 +16,17 @@
 package com.agileapes.nemo.util;
 
 /**
+ * This interface facilitates an abstract way of filtering out items from a collection
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:22)
  */
 public interface Filter<E> {
 
+    /**
+     * @param item    the item to be evaluated
+     * @return {@code true} if the item has to be kept in the target collection
+     */
     boolean accepts(E item);
 
 }
