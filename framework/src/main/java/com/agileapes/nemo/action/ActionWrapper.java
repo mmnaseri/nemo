@@ -92,4 +92,8 @@ public class ActionWrapper {
         action.perform();
     }
 
+    public Map<String, Method> getSetters() {
+        return setters;
+    }
+
 }

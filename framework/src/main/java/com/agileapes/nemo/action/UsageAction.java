@@ -18,6 +18,7 @@ package com.agileapes.nemo.action;
 import com.agileapes.nemo.exec.Executor;
 import com.agileapes.nemo.exec.ExecutorAware;
 
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -36,7 +37,15 @@ public class UsageAction extends Action implements ExecutorAware {
     @Override
     public void perform() throws Exception {
         final Set<Action> actions = executor.getActions();
-
+        final StringBuilder builder = new StringBuilder("Usage: %APPLICATION% ");
+        for (Iterator<Action> iterator = actions.iterator(); iterator.hasNext(); ) {
+            builder.append(iterator.next().getName());
+            if (iterator.hasNext()) {
+                builder.append("|");
+            }
+        }
+        builder.append(" [target options]");
+        System.out.println(builder.toString());
     }
 
 }

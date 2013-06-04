@@ -41,6 +41,11 @@ public class Executor implements BeanPostProcessor {
     private final Set<Action> actions = new CopyOnWriteArraySet<Action>();
     private Action defaultAction;
     private ApplicationContext context;
+    private final String[] args;
+
+    public Executor(String[] args) {
+        this.args = args;
+    }
 
     public Set<Action> getActions() {
         return Collections.unmodifiableSet(actions);
@@ -92,7 +97,7 @@ public class Executor implements BeanPostProcessor {
         }
     }
 
-    public void execute(String ... args) throws Exception {
+    public void execute() throws Exception {
         if (context != null) {
             throw new IllegalStateException("You cannot execute the same context twice.");
         }
@@ -132,6 +137,10 @@ public class Executor implements BeanPostProcessor {
             wrapper.setOption(entry.getKey(), entry.getValue());
         }
         wrapper.perform();
+    }
+
+    public static void execute(String ... args) throws Exception {
+        new Executor(args).execute();
     }
 
 }
