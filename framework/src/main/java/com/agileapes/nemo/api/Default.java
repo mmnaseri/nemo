@@ -13,27 +13,18 @@
  * or substantial portions of the Software.
  */
 
-package com.agileapes.nemo.action;
+package com.agileapes.nemo.api;
 
-import org.springframework.beans.factory.BeanNameAware;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 16:35)
+ * @since 1.0 (2013/6/4, 18:02)
  */
-public abstract class Action implements BeanNameAware {
-
-    private String name;
-
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.name = name;
-    }
-
-    public abstract void perform() throws Exception;
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Default {
 }

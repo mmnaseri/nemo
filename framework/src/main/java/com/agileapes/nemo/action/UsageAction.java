@@ -15,25 +15,28 @@
 
 package com.agileapes.nemo.action;
 
-import org.springframework.beans.factory.BeanNameAware;
+import com.agileapes.nemo.exec.Executor;
+import com.agileapes.nemo.exec.ExecutorAware;
+
+import java.util.Set;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 16:35)
+ * @since 1.0 (2013/6/4, 19:35)
  */
-public abstract class Action implements BeanNameAware {
+public class UsageAction extends Action implements ExecutorAware {
 
-    private String name;
+    private Executor executor;
 
-    public String getName() {
-        return this.name;
+    @Override
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
     }
 
     @Override
-    public void setBeanName(String name) {
-        this.name = name;
-    }
+    public void perform() throws Exception {
+        final Set<Action> actions = executor.getActions();
 
-    public abstract void perform() throws Exception;
+    }
 
 }

@@ -13,27 +13,14 @@
  * or substantial portions of the Software.
  */
 
-package com.agileapes.nemo.action;
-
-import org.springframework.beans.factory.BeanNameAware;
+package com.agileapes.nemo.exec;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 16:35)
+ * @since 1.0 (2013/6/4, 16:37)
  */
-public abstract class Action implements BeanNameAware {
+public interface ExecutorAware {
 
-    private String name;
-
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.name = name;
-    }
-
-    public abstract void perform() throws Exception;
+    void setExecutor(Executor executor);
 
 }
