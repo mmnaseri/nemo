@@ -24,6 +24,7 @@
     <!-- This is the value reader initialization section -->
     <bean class="com.agileapes.nemo.value.impl.PrimitiveValueReader"/>
     <bean class="com.agileapes.nemo.value.impl.ClassValueReader"/>
+    <bean class="com.agileapes.nemo.value.impl.FileValueReader"/>
     <bean class="com.agileapes.nemo.value.impl.SpringValueReaderContext"/>
 
 </beans>

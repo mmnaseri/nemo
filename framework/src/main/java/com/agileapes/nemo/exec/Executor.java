@@ -92,7 +92,7 @@ public class Executor implements BeanPostProcessor {
         if (this.context != null) {
             throw new IllegalStateException("You cannot execute the same context twice.");
         }
-        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/*.xml");
+        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/context.xml", "nemo/exec*.xml");
         context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
             @Override
             public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
