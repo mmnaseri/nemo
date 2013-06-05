@@ -15,7 +15,10 @@
 
 package com.agileapes.nemo.util;
 
+import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +59,90 @@ public class ReflectionUtils {
         String name = setterName.substring(3);
         name = name.substring(0, 1).toLowerCase() + (name.length() > 1 ? name.substring(1) : "");
         return name;
+    }
+
+    private static class Name {
+
+        private String singular;
+        private String plural;
+
+        private Name(String singular) {
+            this(singular, singular);
+        }
+
+        private Name(String singular, String plural) {
+            this.singular = singular;
+            this.plural = plural;
+        }
+
+        private String getSingular() {
+            return singular;
+        }
+
+        private String getPlural() {
+            return plural;
+        }
+    }
+
+    public static String getTypeValues(Class<?> type) {
+        int array = 0;
+        while (type.isArray()) {
+            array ++;
+            type = type.getComponentType();
+        }
+        final Name name;
+        if (type.isEnum()) {
+            final StringBuilder builder = new StringBuilder();
+            Object[] enumConstants = type.getEnumConstants();
+            builder.append("one of ");
+            for (int i = 0; i < enumConstants.length; i++) {
+                Object constant = enumConstants[i];
+                builder.append("\"").append(constant.toString().toLowerCase()).append("\"");
+                if (i < enumConstants.length - 2) {
+                    builder.append(", ");
+                } else if (i == enumConstants.length - 2) {
+                    builder.append(", or ");
+                }
+            }
+            name = new Name(builder.toString());
+        } else if (java.util.Date.class.equals(type) || java.sql.Date.class.equals(type)) {
+            name = new Name("a date formatted as: yyyy/mm/dd [hh:mm[:ss]]", "dates formatted as: yyyy/mm/dd [hh:mm[:ss]]");
+        } else if (URL.class.equals(type)) {
+            name = new Name("a valid URL", "valid URLs");
+        } else if (URI.class.equals(type)) {
+            name = new Name("a valid URI", "valid URIs");
+        } else if (File.class.equals(type)) {
+            name = new Name("a path to a file", "paths to files");
+        } else if (Class.class.equals(type)) {
+            name = new Name("fully qualified name of a class within the classpath (e.g. java.lang.String)",
+                    "fully qualified names of classes within the classpath (e.g. java.lang.String)");
+        } else {
+            String expanded = "";
+            final String simpleName = type.getSimpleName();
+            for (int i = 0; i < simpleName.length(); i ++) {
+                expanded += Character.toLowerCase(simpleName.charAt(i));
+                if (Character.isLowerCase(simpleName.charAt(i)) && i < simpleName.length() - 1 && Character.isUpperCase(simpleName.charAt(i + 1))) {
+                    expanded += " ";
+                }
+            }
+            final String packageName = type.getName().contains(".") ? type.getName().substring(0, type.getName().lastIndexOf('.')) : "";
+            if (!packageName.isEmpty() && !packageName.equals("java.lang")) {
+                expanded = '"' + expanded + "\" under \"" + packageName + "\"";
+                name = new Name("one " + expanded, "one or more " + expanded);
+            } else {
+                name = new Name(("aeiou".contains(String.valueOf(expanded.charAt(0))) ? "an " : "a ") + expanded,
+                        "one or more " + expanded + "s");
+            }
+        }
+        String value = array > 0 ? name.getPlural() : name.getSingular();
+        while (array-- > 0) {
+            if (array > 0) {
+                value = "arrays of " + value;
+            } else {
+                value = "an array of " + value;
+            }
+        }
+        return value;
     }
 
 }

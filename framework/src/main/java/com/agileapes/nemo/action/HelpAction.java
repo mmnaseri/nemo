@@ -19,6 +19,7 @@ import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.exec.Executor;
 import com.agileapes.nemo.exec.ExecutorAware;
+import com.agileapes.nemo.util.ReflectionUtils;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -85,6 +86,7 @@ public class HelpAction extends Action implements ExecutorAware {
                 if (method.isAnnotationPresent(Help.class)) {
                     final Help help = method.getAnnotation(Help.class);
                     output.println(target + " -" + (option.length() > 1 ? "-" : "") + option + " (value)");
+                    output.println("Value type: " + ReflectionUtils.getTypeValues(method.getParameterTypes()[0]));
                     output.println(help.value());
                     if (!help.description().isEmpty()) {
                         output.println(help.description());
