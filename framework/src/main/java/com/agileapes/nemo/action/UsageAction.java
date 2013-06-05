@@ -15,6 +15,7 @@
 
 package com.agileapes.nemo.action;
 
+import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.exec.Executor;
 import com.agileapes.nemo.exec.ExecutorAware;
@@ -28,6 +29,10 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:35)
  */
+@Help(
+        help = "This action will help you identify what the application is capable of doing",
+        description = "Use '--target' to give more detailed information on a specific target"
+)
 public class UsageAction extends Action implements ExecutorAware {
 
     private Executor executor;
@@ -39,6 +44,12 @@ public class UsageAction extends Action implements ExecutorAware {
     }
 
     @Option(alias = 't', index = 0)
+    @Help(
+            help = "This will identify the different options available to each target",
+            description = "Options can have aliases, which will be separated by a '|' and " +
+                    "they also might not be required at all, in which case they will be " +
+                    "encased in a pair of square brackets."
+    )
     public void setTarget(String target) {
         this.target = target;
     }
