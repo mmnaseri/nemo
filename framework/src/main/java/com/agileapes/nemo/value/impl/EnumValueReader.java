@@ -17,8 +17,6 @@ package com.agileapes.nemo.value.impl;
 
 import com.agileapes.nemo.value.ValueReader;
 
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/5, 15:45)
@@ -41,11 +39,6 @@ public class EnumValueReader implements ValueReader {
             }
         }
         throw new IllegalArgumentException(text);
-    }
-
-    public static void main(String[] args) {
-        final RetentionPolicy policy = new EnumValueReader().read("runtime", RetentionPolicy.class);
-        System.out.println("policy = " + policy);
     }
 
 }
