@@ -42,8 +42,8 @@ public class ClassValueReader implements ValueReader, ApplicationContextAware {
     }
 
     @Override
-    public Class[] getTypes() {
-        return new Class[]{Class.class};
+    public boolean handles(Class<?> type) {
+        return Class.class.equals(type);
     }
 
     @Override

@@ -18,8 +18,8 @@ package com.agileapes.nemo.value.impl;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderContext;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * This is the default value reader context for the application
@@ -29,29 +29,34 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultValueReaderContext implements ValueReaderContext {
 
-    private final Map<Class, ValueReader> readers = new ConcurrentHashMap<Class, ValueReader>();
+    private final Set<ValueReader> valueReaders = new CopyOnWriteArraySet<ValueReader>();
 
     @Override
     public void add(ValueReader reader) {
-        for (Class type : reader.getTypes()) {
-            if (readers.containsKey(type)) {
-                throw new IllegalArgumentException("Duplicate readers for type: " + type.getCanonicalName());
+        valueReaders.add(reader);
+    }
+
+    private ValueReader getValueReader(Class<?> type) {
+        for (ValueReader valueReader : valueReaders) {
+            if (valueReader.handles(type)) {
+                return valueReader;
             }
-            readers.put(type, reader);
         }
+        return null;
     }
 
     @Override
-    public Class[] getTypes() {
-        return readers.keySet().toArray(new Class[readers.size()]);
+    public boolean handles(Class<?> type) {
+        return getValueReader(type) != null;
     }
 
     @Override
     public <E> E read(String text, Class<E> type) {
-        if (readers.containsKey(type)) {
-            return readers.get(type).read(text, type);
+        final ValueReader reader = getValueReader(type);
+        if (reader == null) {
+            throw new IllegalArgumentException("No reader was found for type: " + type.getCanonicalName());
         }
-        throw new IllegalArgumentException("No reader was found for type: " + type.getCanonicalName());
+        return reader.read(text, type);
     }
 
 }

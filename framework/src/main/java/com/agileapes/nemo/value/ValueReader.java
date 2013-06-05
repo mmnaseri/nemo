@@ -28,9 +28,10 @@ package com.agileapes.nemo.value;
 public interface ValueReader {
 
     /**
-     * @return an array of all the types recognized by this reader
+     * @return {@code true} if the given type is handled by this class
+     * @param type    the type being processed
      */
-    Class[] getTypes();
+    boolean handles(Class<?> type);
 
     /**
      * @param text    the textual representation of the data

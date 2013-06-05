@@ -25,6 +25,9 @@
     <bean class="com.agileapes.nemo.value.impl.PrimitiveValueReader"/>
     <bean class="com.agileapes.nemo.value.impl.ClassValueReader"/>
     <bean class="com.agileapes.nemo.value.impl.FileValueReader"/>
+    <bean class="com.agileapes.nemo.value.impl.UrlValueReader"/>
+    <bean class="com.agileapes.nemo.value.impl.EnumValueReader"/>
+    <bean class="com.agileapes.nemo.value.impl.DateValueReader"/>
     <bean class="com.agileapes.nemo.value.impl.SpringValueReaderContext"/>
 
 </beans>

@@ -17,26 +17,35 @@ package com.agileapes.nemo.value.impl;
 
 import com.agileapes.nemo.value.ValueReader;
 
-import java.io.File;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * This value reader will read the path to a file and return its representing object
- *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 20:35)
+ * @since 1.0 (2013/6/5, 15:45)
  */
-public class FileValueReader implements ValueReader {
+public class EnumValueReader implements ValueReader {
+
     @Override
     public boolean handles(Class<?> type) {
-        return File.class.equals(type);
+        return type.isEnum();
     }
 
     @Override
     public <E> E read(String text, Class<E> type) {
-        if (type.equals(File.class)) {
-            //noinspection unchecked
-            return (E) new File(text);
+        if (type.isEnum()) {
+            final E[] constants = type.getEnumConstants();
+            for (E constant : constants) {
+                if (constant.toString().equalsIgnoreCase(text)) {
+                    return constant;
+                }
+            }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(text);
     }
+
+    public static void main(String[] args) {
+        final RetentionPolicy policy = new EnumValueReader().read("runtime", RetentionPolicy.class);
+        System.out.println("policy = " + policy);
+    }
+
 }

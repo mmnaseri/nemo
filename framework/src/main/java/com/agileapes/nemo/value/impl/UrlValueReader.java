@@ -17,26 +17,34 @@ package com.agileapes.nemo.value.impl;
 
 import com.agileapes.nemo.value.ValueReader;
 
-import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 
 /**
- * This value reader will read the path to a file and return its representing object
- *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 20:35)
+ * @since 1.0 (2013/6/5, 15:42)
  */
-public class FileValueReader implements ValueReader {
+public class UrlValueReader implements ValueReader {
+
     @Override
     public boolean handles(Class<?> type) {
-        return File.class.equals(type);
+        return URL.class.equals(type) || URI.class.equals(type);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <E> E read(String text, Class<E> type) {
-        if (type.equals(File.class)) {
-            //noinspection unchecked
-            return (E) new File(text);
+        if (type.equals(URL.class)) {
+            try {
+                return (E) new URL(text);
+            } catch (MalformedURLException e) {
+                throw new IllegalArgumentException("Malformed URL entered: " + text, e);
+            }
+        } else if (type.equals(URI.class)) {
+            return (E) URI.create(text);
         }
         throw new IllegalArgumentException();
     }
+
 }

@@ -17,6 +17,9 @@ package com.agileapes.nemo.value.impl;
 
 import com.agileapes.nemo.value.ValueReader;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This value reader will handle all 7 primitive types within Java (and their object-oriented
  * counterparts) plus the String data type.
@@ -25,11 +28,19 @@ import com.agileapes.nemo.value.ValueReader;
  * @since 1.0 (2013/6/4, 18:59)
  */
 public class PrimitiveValueReader implements ValueReader {
+
+    private final List<? extends Class> classes;
+
+    @SuppressWarnings("unchecked")
+    public PrimitiveValueReader() {
+        classes = Arrays.asList(int.class, long.class, short.class, boolean.class, char.class,
+                float.class, double.class, Integer.class, Long.class, Short.class, Boolean.class,
+                Character.class, Float.class, Double.class, String.class);
+    }
+
     @Override
-    public Class[] getTypes() {
-        return new Class[]{int.class, long.class, short.class, boolean.class, char.class,
-            float.class, double.class, Integer.class, Long.class, Short.class, Boolean.class,
-            Character.class, Float.class, Double.class, String.class};
+    public boolean handles(Class<?> type) {
+        return classes.contains(type);
     }
 
     @Override
