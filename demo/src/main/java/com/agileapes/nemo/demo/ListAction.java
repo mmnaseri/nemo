@@ -16,7 +16,6 @@
 package com.agileapes.nemo.demo;
 
 import com.agileapes.nemo.action.Action;
-import com.agileapes.nemo.api.Default;
 import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 
@@ -27,7 +26,6 @@ import java.io.PrintStream;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 20:33)
  */
-@Default
 @Help(value = "Lists the files in the current directory")
 public class ListAction extends Action {
 

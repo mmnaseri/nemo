@@ -19,7 +19,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- This is a simple action -->
-    <bean id=".nemo" class="com.agileapes.nemo.action.NemoAction"/>
+    <bean name="+nemo" class="com.agileapes.nemo.action.NemoAction"/>
 
     <!-- This is the value reader initialization section -->
     <bean class="com.agileapes.nemo.value.impl.PrimitiveValueReader"/>

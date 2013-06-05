@@ -17,7 +17,6 @@ package com.agileapes.nemo.exec;
 
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionWrapper;
-import com.agileapes.nemo.api.Default;
 import com.agileapes.nemo.option.Options;
 import com.agileapes.nemo.value.ValueReaderContext;
 import org.springframework.beans.BeansException;
@@ -55,6 +54,7 @@ public class Executor implements BeanPostProcessor {
     private ApplicationContext context;
     private final String[] args;
     private final PrintStream output;
+    private Execution execution = null;
 
     public Executor(PrintStream output, String[] args) {
         this.output = output;
@@ -113,15 +113,18 @@ public class Executor implements BeanPostProcessor {
         final String[] names = context.getBeanNamesForType(Action.class);
         for (String name : names) {
             if (context.isSingleton(name)) {
-                final Action bean = context.getBean(name, Action.class);
-                if (bean.getClass().isAnnotationPresent(Default.class)) {
+                final Action action = context.getBean(name, Action.class);
+                if (action.isDefaultAction()) {
+                    if (action.isInternal()) {
+                        throw new IllegalStateException("Internal actions cannot be marked as the default action");
+                    }
                     if (defaultAction == null) {
-                        defaultAction = bean;
+                        defaultAction = action;
                     } else {
                         throw new IllegalStateException("More than one default action specified");
                     }
                 }
-                actions.add(bean);
+                actions.add(action);
             }
         }
     }
@@ -147,6 +150,9 @@ public class Executor implements BeanPostProcessor {
      * @return the execution for the current arguments
      */
     public Execution getExecution() {
+        if (execution != null) {
+            return execution;
+        }
         final Action target;
         String[] arguments;
         if (args.length == 0 || args[0].startsWith("-")) {
@@ -160,7 +166,11 @@ public class Executor implements BeanPostProcessor {
             arguments = new String[args.length - 1];
             System.arraycopy(args, 1, arguments, 0, args.length - 1);
         }
-        return new Execution(target, new Options.Builder(Arrays.asList(arguments)).build());
+        if (target.isInternal()) {
+            throw new IllegalStateException("Internal actions cannot be invoked from the command-line");
+        }
+        execution = new Execution(target, new Options.Builder(Arrays.asList(arguments)).build());
+        return execution;
     }
 
     /**

@@ -66,6 +66,9 @@ public class HelpAction extends Action implements ExecutorAware {
     public void perform(PrintStream output) throws Exception {
         if (target != null && !target.isEmpty()) {
             final Action action = executor.getAction(target);
+            if (action.isInternal()) {
+                throw new IllegalArgumentException("You cannot request help for internal actions");
+            }
             if (option == null || option.isEmpty()) {
                 if (action.getClass().isAnnotationPresent(Help.class)) {
                     final Help help = action.getClass().getAnnotation(Help.class);
@@ -101,11 +104,20 @@ public class HelpAction extends Action implements ExecutorAware {
                 }
                 Collections.sort(names);
                 for (String name : names) {
+                    final Action action = executor.getAction(name);
+                    if (action.isInternal()) {
+                        continue;
+                    }
+                    if (action.isDefaultAction()) {
+                        output.print(" * ");
+                    } else {
+                        output.print("   ");
+                    }
                     output.print(name);
                     for (int i = 0; i < max - name.length() + 4; i++) {
                         output.print(" ");
                     }
-                    final Class<? extends Action> actionClass = executor.getAction(name).getClass();
+                    final Class<? extends Action> actionClass = action.getClass();
                     if (actionClass.isAnnotationPresent(Help.class)) {
                         output.println(actionClass.getAnnotation(Help.class).value());
                     } else {

@@ -24,8 +24,7 @@ import java.io.PrintStream;
  * that is expected to be addressable.
  *
  * One action can be marked as default (meaning the routing mechanism will be targeting them
- * should no action be specified by the invoking user) using the annotation API (via
- * {@link com.agileapes.nemo.api.Default}).
+ * should no action be specified by the invoking user) using {@link #setDefaultAction(boolean)}
  *
  * Actions can also receive property values through setter methods from the outside. The
  * type of the properties being set in this manner must be understandable by the framework,
@@ -37,7 +36,6 @@ import java.io.PrintStream;
  *
  * Enabling actions is possible through the bean definitions under "nemo/*.xml" context file.
  *
- * @see com.agileapes.nemo.api.Default
  * @see com.agileapes.nemo.api.Option
  * @see com.agileapes.nemo.value.ValueReader
  * @see com.agileapes.nemo.exec.Executor
@@ -47,6 +45,8 @@ import java.io.PrintStream;
 public abstract class Action implements BeanNameAware {
 
     private String name;
+    private boolean defaultAction;
+    private boolean internal;
 
     /**
      * This method returns the name of this action. Names must be unique
@@ -60,6 +60,22 @@ public abstract class Action implements BeanNameAware {
     @Override
     public void setBeanName(String name) {
         this.name = name;
+    }
+
+    public boolean isDefaultAction() {
+        return defaultAction;
+    }
+
+    public void setDefaultAction(boolean defaultAction) {
+        this.defaultAction = defaultAction;
+    }
+
+    public boolean isInternal() {
+        return internal;
+    }
+
+    public void setInternal(boolean internal) {
+        this.internal = internal;
     }
 
     /**

@@ -20,7 +20,9 @@
 
     <bean id="list" class="com.agileapes.nemo.demo.ListAction"/>
     <bean id="read" class="com.agileapes.nemo.demo.ReadAction"/>
-    <bean id="usage" class="com.agileapes.nemo.action.UsageAction"/>
+    <bean id="usage" class="com.agileapes.nemo.action.UsageAction">
+        <property name="defaultAction" value="true"/>
+    </bean>
     <bean id="help" class="com.agileapes.nemo.action.HelpAction"/>
 
 </beans>
