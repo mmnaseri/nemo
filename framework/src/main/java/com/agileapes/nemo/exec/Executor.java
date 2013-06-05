@@ -27,6 +27,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -39,7 +40,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * <p><code>public static void main(String[] args) throws Exception {<br/>
  * &nbsp;&nbsp;&nbsp;&nbsp;new Executor(args).execute();<br/>
  * }</code></p>
- * The same can be achieved using {@link #execute(String...)}:
+ * The same can be achieved using {@link #execute(java.io.PrintStream, String...)}:
  * <p><code>public static void main(String[] args) throws Exception {<br/>
  * &nbsp;&nbsp;&nbsp;&nbsp;Executor.execute(args);<br/>
  * }</code></p>
@@ -53,8 +54,10 @@ public class Executor implements BeanPostProcessor {
     private Action defaultAction;
     private ApplicationContext context;
     private final String[] args;
+    private final PrintStream output;
 
-    public Executor(String[] args) {
+    public Executor(PrintStream output, String[] args) {
+        this.output = output;
         this.args = args;
     }
 
@@ -176,7 +179,7 @@ public class Executor implements BeanPostProcessor {
         for (String value : execution.getOptions().getIndices()) {
             wrapper.setIndex(value);
         }
-        wrapper.perform();
+        wrapper.perform(output);
     }
 
     /**
@@ -194,11 +197,12 @@ public class Executor implements BeanPostProcessor {
     /**
      * This shorthand method is only made available so that by statically importing it
      * your code will look less cluttered.
+     * @param output  the output to the system
      * @param args    the arguments to the application as they are
      * @throws Exception
      */
-    public static void execute(String ... args) throws Exception {
-        new Executor(args).execute();
+    public static void execute(PrintStream output, String... args) throws Exception {
+        new Executor(output, args).execute();
     }
 
 }

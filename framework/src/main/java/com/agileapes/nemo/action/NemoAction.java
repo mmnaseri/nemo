@@ -18,6 +18,8 @@ package com.agileapes.nemo.action;
 import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 
+import java.io.PrintStream;
+
 /**
  * This action will simply print out an about message that will introduce Nemo&copy; as the
  * underlying framework.
@@ -44,16 +46,16 @@ public class NemoAction extends Action {
     }
 
     @Override
-    public void perform() throws Exception {
-        System.out.println(" Nemo v1.0 -- CLI assistance framework");
-        System.out.println("========================================");
-        System.out.println("  brought to you by AgileApes, Ltd.");
-        System.out.println("  http://projects.agileapes.com/nemo");
-        System.out.println("  Copyright AgileApes, Ltd (c) 2013");
+    public void perform(PrintStream output) throws Exception {
+        output.println(" Nemo v1.0 -- CLI assistance framework");
+        output.println("========================================");
+        output.println("  brought to you by AgileApes, Ltd.");
+        output.println("  http://projects.agileapes.com/nemo");
+        output.println("  Copyright AgileApes, Ltd (c) 2013");
         if (verbose) {
-            System.out.println("----------------------------------------");
-            System.out.println("  Developed by: M. M. Naseri");
-            System.out.println("                m.m.naseri@gmail.com");
+            output.println("----------------------------------------");
+            output.println("  Developed by: M. M. Naseri");
+            output.println("                m.m.naseri@gmail.com");
         }
     }
 

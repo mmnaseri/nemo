@@ -17,6 +17,8 @@ package com.agileapes.nemo.action;
 
 import org.springframework.beans.factory.BeanNameAware;
 
+import java.io.PrintStream;
+
 /**
  * This is the centerpiece of the CLI framework. Each action is a performing body
  * that is expected to be addressable.
@@ -64,8 +66,10 @@ public abstract class Action implements BeanNameAware {
      * This method is invoked by the system whenever all of the required parameters
      * have been set from the outside and a route to this action is requested by the
      * platform
+     * @param output    the action is supposed to write its output to this print stream
+     *                  so that output redirection can be managed centrally
      * @throws Exception
      */
-    public abstract void perform() throws Exception;
+    public abstract void perform(PrintStream output) throws Exception;
 
 }

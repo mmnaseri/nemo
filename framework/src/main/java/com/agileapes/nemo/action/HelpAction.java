@@ -20,6 +20,7 @@ import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.exec.Executor;
 import com.agileapes.nemo.exec.ExecutorAware;
 
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,31 +63,31 @@ public class HelpAction extends Action implements ExecutorAware {
     }
 
     @Override
-    public void perform() throws Exception {
+    public void perform(PrintStream output) throws Exception {
         if (target != null && !target.isEmpty()) {
             final Action action = executor.getAction(target);
             if (option == null || option.isEmpty()) {
                 if (action.getClass().isAnnotationPresent(Help.class)) {
                     final Help help = action.getClass().getAnnotation(Help.class);
-                    System.out.println("Target: " + target);
-                    System.out.println(help.value());
+                    output.println("Target: " + target);
+                    output.println(help.value());
                     if (!help.description().isEmpty()) {
-                        System.out.println(help.description());
+                        output.println(help.description());
                     }
                 } else {
-                    System.out.println(target + ": No value is available for this target");
+                    output.println(target + ": No value is available for this target");
                 }
             } else {
                 final Method method = new ActionWrapper(action, null).getSetter(option);
                 if (method.isAnnotationPresent(Help.class)) {
                     final Help help = method.getAnnotation(Help.class);
-                    System.out.println(target + " -" + (option.length() > 1 ? "-" : "") + option + " (value)");
-                    System.out.println(help.value());
+                    output.println(target + " -" + (option.length() > 1 ? "-" : "") + option + " (value)");
+                    output.println(help.value());
                     if (!help.description().isEmpty()) {
-                        System.out.println(help.description());
+                        output.println(help.description());
                     }
                 } else {
-                    System.out.println(target + "." + option + ": No value is available for this option");
+                    output.println(target + "." + option + ": No value is available for this option");
                 }
             }
         } else {
@@ -100,15 +101,15 @@ public class HelpAction extends Action implements ExecutorAware {
                 }
                 Collections.sort(names);
                 for (String name : names) {
-                    System.out.print(name);
+                    output.print(name);
                     for (int i = 0; i < max - name.length() + 4; i++) {
-                        System.out.print(" ");
+                        output.print(" ");
                     }
                     final Class<? extends Action> actionClass = executor.getAction(name).getClass();
                     if (actionClass.isAnnotationPresent(Help.class)) {
-                        System.out.println(actionClass.getAnnotation(Help.class).value());
+                        output.println(actionClass.getAnnotation(Help.class).value());
                     } else {
-                        System.out.println();
+                        output.println();
                     }
                 }
             } else {
@@ -117,7 +118,7 @@ public class HelpAction extends Action implements ExecutorAware {
                     throw new IllegalArgumentException("No default action set for the application");
                 }
                 target = action.getName();
-                perform();
+                perform(output);
             }
         }
     }

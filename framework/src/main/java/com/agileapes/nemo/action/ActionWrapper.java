@@ -20,6 +20,7 @@ import com.agileapes.nemo.util.Filter;
 import com.agileapes.nemo.util.ReflectionUtils;
 import com.agileapes.nemo.value.ValueReaderContext;
 
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -154,13 +155,14 @@ public class ActionWrapper {
     /**
      * This method will delegate the performing of the action to the wrapped action instance,
      * while checking for all the required options to be set.
+     * @param output    this is the output to which the wrapped action will write
      * @throws Exception
      */
-    public void perform() throws Exception {
+    public void perform(PrintStream output) throws Exception {
         if (!required.isEmpty()) {
             throw new IllegalStateException("Required options missing value: " + required);
         }
-        action.perform();
+        action.perform(output);
     }
 
     /**

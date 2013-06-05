@@ -21,6 +21,7 @@ import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 
 import java.io.File;
+import java.io.PrintStream;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
@@ -39,7 +40,7 @@ public class ListAction extends Action {
     }
 
     @Override
-    public void perform() throws Exception {
+    public void perform(PrintStream output) throws Exception {
         final File current = new File(".");
         final File[] files = current.listFiles();
         if (files == null) {

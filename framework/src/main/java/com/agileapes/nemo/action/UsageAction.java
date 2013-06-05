@@ -20,6 +20,7 @@ import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.exec.Executor;
 import com.agileapes.nemo.exec.ExecutorAware;
 
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -55,7 +56,7 @@ public class UsageAction extends Action implements ExecutorAware {
     }
 
     @Override
-    public void perform() throws Exception {
+    public void perform(PrintStream output) throws Exception {
         final StringBuilder builder = new StringBuilder("Usage:\n");
         builder.append("%APPLICATION% ");
         if (target == null) {
@@ -93,7 +94,7 @@ public class UsageAction extends Action implements ExecutorAware {
             }
 
         }
-        System.out.println(builder.toString());
+        output.println(builder.toString());
     }
 
 }
