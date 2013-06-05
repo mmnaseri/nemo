@@ -52,4 +52,10 @@ public class ReflectionUtils {
         return methods.toArray(new Method[methods.size()]);
     }
 
+    public static String getPropertyName(String setterName) {
+        String name = setterName.substring(3);
+        name = name.substring(0, 1).toLowerCase() + (name.length() > 1 ? name.substring(1) : "");
+        return name;
+    }
+
 }

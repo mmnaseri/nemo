@@ -42,4 +42,9 @@ public @interface Option {
      */
     boolean required() default false;
 
+    /**
+     * This will indicate that options can be specified without leading argument name
+     */
+    int index() default -1;
+
 }

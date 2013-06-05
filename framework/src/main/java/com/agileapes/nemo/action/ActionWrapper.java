@@ -42,6 +42,8 @@ public class ActionWrapper {
     private final Map<String, Method> setters = new HashMap<String, Method>();
     private final Set<String> required = new HashSet<String>();
     private final Map<String, String> aliases = new HashMap<String, String>();
+    private final Map<Integer, String> indices = new HashMap<Integer, String>();
+    private int index = 0;
 
     /**
      * This constructor accepts the action to be wrapped and the instance of
@@ -61,14 +63,28 @@ public class ActionWrapper {
         });
         for (Method method : methods) {
             final Option option = method.getAnnotation(Option.class);
-            String name = method.getName().substring(3);
-            name = name.substring(0, 1).toLowerCase() + (name.length() > 1 ? name.substring(1) : "");
+            final String name = ReflectionUtils.getPropertyName(method.getName());
             setters.put(name, method);
             if (option.alias() != ' ') {
-                aliases.put(String.valueOf(option.alias()), name);
+                final String alias = String.valueOf(option.alias());
+                if (aliases.containsKey(alias)) {
+                    throw new IllegalStateException("Duplicate option alias: " + alias);
+                }
+                aliases.put(alias, name);
+            }
+            if (option.index() >= 0) {
+                if (indices.containsKey(option.index())) {
+                    throw new IllegalStateException("Duplicate option index: " + option.index());
+                }
+                indices.put(option.index(), name);
             }
             if (option.required()) {
                 required.add(name);
+            }
+        }
+        for (int i = 0; i < indices.size(); i ++) {
+            if (!indices.containsKey(i)) {
+                throw new IllegalStateException("Option indices must be sequential, and start from 0");
             }
         }
     }
@@ -103,6 +119,14 @@ public class ActionWrapper {
         } catch (Throwable e) {
             throw new IllegalStateException("Failed to set option: " + option, e);
         }
+    }
+
+    public void setIndex(String value) {
+        final String property = indices.get(index++);
+        if (property == null) {
+            throw new IllegalArgumentException("Invalid argument: " + value);
+        }
+        setOption(property, value);
     }
 
     /**

@@ -164,6 +164,9 @@ public class Executor implements BeanPostProcessor {
         for (Map.Entry<String, String> entry : execution.getOptions().getOptions().entrySet()) {
             wrapper.setOption(entry.getKey(), entry.getValue());
         }
+        for (String value : execution.getOptions().getIndices()) {
+            wrapper.setIndex(value);
+        }
         wrapper.perform();
     }
 

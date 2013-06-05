@@ -28,6 +28,7 @@ public class Options {
 
     private final Map<String, String> options = new HashMap<String, String>();
     private final Set<String> flags = new HashSet<String>();
+    private final List<String> indices = new ArrayList<String>();
 
     private Options() {}
 
@@ -39,12 +40,20 @@ public class Options {
         options.put(name, value);
     }
 
+    private void setIndex(String value) {
+        indices.add(value);
+    }
+
     public Map<String, String> getOptions() {
         return options;
     }
 
     public Set<String> getFlags() {
         return flags;
+    }
+
+    public List<String> getIndices() {
+        return indices;
     }
 
     /**
@@ -85,7 +94,7 @@ public class Options {
                         i ++;
                     }
                 } else {
-                    throw new IllegalArgumentException("Invalid command-line argument: " + argument);
+                    options.setIndex(argument);
                 }
             }
             return options;
