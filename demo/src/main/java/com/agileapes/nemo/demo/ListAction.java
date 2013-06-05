@@ -16,6 +16,9 @@
 package com.agileapes.nemo.demo;
 
 import com.agileapes.nemo.action.Action;
+import com.agileapes.nemo.api.Default;
+import com.agileapes.nemo.api.Help;
+import com.agileapes.nemo.api.Option;
 
 import java.io.File;
 
@@ -23,7 +26,17 @@ import java.io.File;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 20:33)
  */
+@Default
+@Help(value = "Lists the files in the current directory")
 public class ListAction extends Action {
+
+    private boolean numbers;
+
+    @Option(alias = 'n')
+    @Help(value = "Prints sequential file number prior to file path")
+    public void setNumbers(boolean numbers) {
+        this.numbers = numbers;
+    }
 
     @Override
     public void perform() throws Exception {
@@ -32,10 +45,13 @@ public class ListAction extends Action {
         if (files == null) {
             throw new Exception("Could not get the list of files under current directory");
         }
+        int i = 0;
         System.out.println("There are " + files.length + " files under " + current.getAbsolutePath());
         for (File file : files) {
+            if (numbers) {
+                System.out.print((++i) + "\t");
+            }
             System.out.println(file.getAbsolutePath());
         }
     }
-
 }

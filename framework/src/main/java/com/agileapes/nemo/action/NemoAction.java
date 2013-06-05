@@ -26,7 +26,7 @@ import com.agileapes.nemo.api.Option;
  * @since 1.0 (2013/6/4, 18:27)
  */
 @Help(
-        help = "Brings up a simple 'About Nemo (c)' message",
+        value = "Brings up a simple 'About Nemo (c)' message",
         description = "You can ask for more details using the '--verbose' option"
 )
 public class NemoAction extends Action {
@@ -38,7 +38,7 @@ public class NemoAction extends Action {
     }
 
     @Option(alias = 'v')
-    @Help(help = "This will give you more information about Nemo (c)")
+    @Help(value = "This will give you more information about Nemo (c)")
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

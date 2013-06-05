@@ -30,8 +30,8 @@ import java.util.Set;
  * @since 1.0 (2013/6/4, 19:35)
  */
 @Help(
-        help = "This action will help you identify what the application is capable of doing",
-        description = "Use '--target' to give more detailed information on a specific target"
+        value = "This action will value you identify what the application is capable of doing",
+        description = "Use '--target' to get more detailed information on a specific target"
 )
 public class UsageAction extends Action implements ExecutorAware {
 
@@ -45,7 +45,7 @@ public class UsageAction extends Action implements ExecutorAware {
 
     @Option(alias = 't', index = 0)
     @Help(
-            help = "This will identify the different options available to each target",
+            value = "This will identify the different options available to each target",
             description = "Options can have aliases, which will be separated by a '|' and " +
                     "they also might not be required at all, in which case they will be " +
                     "encased in a pair of square brackets."
@@ -57,9 +57,9 @@ public class UsageAction extends Action implements ExecutorAware {
     @Override
     public void perform() throws Exception {
         final StringBuilder builder = new StringBuilder("Usage:\n");
-        final Set<Action> actions = executor.getActions();
         builder.append("%APPLICATION% ");
         if (target == null) {
+            final Set<Action> actions = executor.getActions();
             for (Iterator<Action> iterator = actions.iterator(); iterator.hasNext(); ) {
                 builder.append(iterator.next().getName());
                 if (iterator.hasNext()) {
@@ -69,16 +69,7 @@ public class UsageAction extends Action implements ExecutorAware {
             builder.append(" [target options]");
         } else {
             builder.append(target).append(" ");
-            Action targetAction = null;
-            for (Action action : actions) {
-                if (action.getName().equals(target)) {
-                    targetAction = action;
-                    break;
-                }
-            }
-            if (targetAction == null) {
-                throw new IllegalArgumentException("No such target: " + target);
-            }
+            Action targetAction = executor.getAction(target);
             final ActionWrapper wrapper = new ActionWrapper(targetAction, null);
             for (Iterator<String> iterator = wrapper.getSetters().keySet().iterator(); iterator.hasNext(); ) {
                 String property = iterator.next();

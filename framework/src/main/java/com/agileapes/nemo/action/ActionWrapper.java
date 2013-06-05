@@ -104,15 +104,8 @@ public class ActionWrapper {
      * @param value     the textual representation of the value it should take
      */
     public void setOption(String option, String value) {
-        if (!setters.containsKey(option)) {
-            if (aliases.containsKey(option)) {
-                option = aliases.get(option);
-            } else {
-                throw new IllegalArgumentException("No such argument: " + option);
-            }
-        }
-        required.remove(option);
-        final Method method = setters.get(option);
+        required.remove(getOptionName(option));
+        final Method method = getSetter(option);
         try {
             final Object actualValue = readerContext.read(value, method.getParameterTypes()[0]);
             method.invoke(action, actualValue);
@@ -121,6 +114,35 @@ public class ActionWrapper {
         }
     }
 
+    /**
+     * This method will return the setter method associated with the given option name or alias
+     * @param option    the name or alias of the option
+     * @return the associated setter method
+     */
+    public Method getSetter(String option) {
+        return setters.get(getOptionName(option));
+    }
+
+    /**
+     * This internal method will return the actual name of the option based on its name or alias
+     * @param option    the name or alias of the option
+     * @return the name of the option
+     */
+    private String getOptionName(String option) {
+        if (!setters.containsKey(option)) {
+            if (aliases.containsKey(option)) {
+                option = aliases.get(option);
+            } else {
+                throw new IllegalArgumentException("No such argument: " + option);
+            }
+        }
+        return option;
+    }
+
+    /**
+     * This method will set the next value in line for the indexed options
+     * @param value    the value of the option
+     */
     public void setIndex(String value) {
         final String property = indices.get(index++);
         if (property == null) {

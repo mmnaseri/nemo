@@ -16,6 +16,7 @@
 package com.agileapes.nemo.demo;
 
 import com.agileapes.nemo.action.Action;
+import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 
 import java.io.BufferedReader;
@@ -26,6 +27,10 @@ import java.io.FileReader;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 20:35)
  */
+@Help(
+        value = "Prints out the contents of the specified file",
+        description = "Use '--file' to specify which file should be used"
+)
 public class ReadAction extends Action {
 
     private File file;
@@ -35,7 +40,7 @@ public class ReadAction extends Action {
         return file;
     }
 
-    @Option(alias = 'f', required = true)
+    @Option(alias = 'f', required = true, index = 0)
     public void setFile(File file) {
         this.file = file;
     }

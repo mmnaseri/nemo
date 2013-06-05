@@ -33,7 +33,6 @@ public class DefaultValueReaderContext implements ValueReaderContext {
 
     @Override
     public void add(ValueReader reader) {
-        System.out.println();
         for (Class type : reader.getTypes()) {
             if (readers.containsKey(type)) {
                 throw new IllegalArgumentException("Duplicate readers for type: " + type.getCanonicalName());

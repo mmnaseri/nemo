@@ -124,10 +124,27 @@ public class Executor implements BeanPostProcessor {
     }
 
     /**
+     * This will select the named action from the context
+     * @param target    the name of the action
+     * @return the prepared instance of the action
+     */
+    public Action getAction(String target) {
+        if (target == null || target.isEmpty()) {
+            return getDefaultAction();
+        }
+        for (Action action : actions) {
+            if (action.getName().equals(target)) {
+                return action;
+            }
+        }
+        throw new IllegalStateException("Invalid target: " + args[0]);
+    }
+
+    /**
      * @return the execution for the current arguments
      */
     public Execution getExecution() {
-        Action target = null;
+        final Action target;
         String[] arguments;
         if (args.length == 0 || args[0].startsWith("-")) {
             if (defaultAction == null) {
@@ -136,15 +153,7 @@ public class Executor implements BeanPostProcessor {
             arguments = args;
             target = defaultAction;
         } else {
-            for (Action action : actions) {
-                if (action.getName().equals(args[0])) {
-                    target = action;
-                    break;
-                }
-            }
-            if (target == null) {
-                throw new IllegalStateException("Invalid target: " + args[0]);
-            }
+            target = getAction(args[0]);
             arguments = new String[args.length - 1];
             System.arraycopy(args, 1, arguments, 0, args.length - 1);
         }

@@ -24,7 +24,7 @@ import com.agileapes.nemo.exec.Executor;
 public class Runner {
 
     public static void main(String[] args) throws Exception {
-        Executor.execute("usage", "read");
+        Executor.execute(args);
     }
 
 }

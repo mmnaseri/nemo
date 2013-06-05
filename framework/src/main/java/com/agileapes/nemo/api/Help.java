@@ -31,7 +31,7 @@ public @interface Help {
     /**
      * @return a short message describing what this option or action will do
      */
-    String help();
+    String value();
 
     /**
      * @return a longer description that will describe exactly what the target does and
