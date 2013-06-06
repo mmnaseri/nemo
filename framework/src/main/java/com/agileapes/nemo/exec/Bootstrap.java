@@ -15,6 +15,8 @@
 
 package com.agileapes.nemo.exec;
 
+import com.agileapes.nemo.event.Multicaster;
+import com.agileapes.nemo.event.NemoBootstrappedEvent;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -122,8 +124,9 @@ public class Bootstrap {
             }
         }
         applicationContext.refresh();
-        final Executor executor = applicationContext.getBean(Executor.class);
-        executor.setApplicationContext(applicationContext);
+        final ConfigurableApplicationContext bootstrappedContext = new Multicaster(applicationContext).publishEvent(new NemoBootstrappedEvent(applicationContext)).getApplicationContext();
+        final Executor executor = bootstrappedContext.getBean(Executor.class);
+        executor.setApplicationContext(bootstrappedContext);
         return executor;
     }
 

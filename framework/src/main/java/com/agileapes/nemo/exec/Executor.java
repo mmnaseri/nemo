@@ -18,6 +18,7 @@ package com.agileapes.nemo.exec;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.impl.ActionDisassembler;
 import com.agileapes.nemo.action.impl.ActionWrapper;
+import com.agileapes.nemo.event.*;
 import com.agileapes.nemo.option.Options;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -53,6 +54,7 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
     private String[] args;
     private PrintStream output;
     private Execution execution = null;
+    private Multicaster multicaster;
 
     /**
      * @return the set of actions discovered by the framework
@@ -100,11 +102,11 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
      * This internal method will load actions from the Application context
      */
     private void prepareActions() {
-        final String[] names = context.getBeanNamesForType(Action.class);
+        String[] names = multicaster.publishEvent(new ActionNamesListedEvent(this, context.getBeanNamesForType(Action.class))).getNames();
         final ActionDisassembler disassembler = context.getBean(ActionDisassembler.class);
         for (String name : names) {
             if (context.isSingleton(name)) {
-                final Action action = disassembler.getActionWrapper(context.getBean(name, Action.class));
+                final Action action = disassembler.getActionWrapper(context.getBean(name));
                 if (action.isDefaultAction()) {
                     if (action.isInternal()) {
                         throw new IllegalStateException("Internal actions cannot be marked as the default action");
@@ -117,6 +119,11 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
                 }
                 actions.add(action);
             }
+        }
+        final Set<Action> actionSet = multicaster.publishEvent(new ActionsPreparedEvent(this, actions)).getActions();
+        if (!actions.equals(actionSet)) {
+            actions.clear();
+            actions.addAll(actionSet);
         }
     }
 
@@ -161,6 +168,7 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
             throw new IllegalStateException("Internal actions cannot be invoked from the command-line");
         }
         execution = new Execution(target, new Options.Builder(Arrays.asList(arguments)).build());
+        execution = multicaster.publishEvent(new ExecutionConfiguredEvent(this, execution)).getExecution();
         return execution;
     }
 
@@ -184,7 +192,9 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
             final String value = indices.get(i);
             ((ActionWrapper) action).setIndex(i, value);
         }
+        multicaster.publishEvent(new BeforeActionPerformedEvent(this, action));
         action.perform(output);
+        multicaster.publishEvent(new AfterActionPerformedEvent(this, action));
     }
 
     @Override
@@ -214,7 +224,9 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
         if (context == null) {
             prepareContext();
         }
+        this.multicaster = new Multicaster(context);
         prepareActions();
         perform(getExecution());
+        multicaster.publishEvent(new ApplicationShutdownEvent(this));
     }
 }
