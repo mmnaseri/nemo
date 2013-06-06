@@ -59,7 +59,9 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
         }
         DisassembleStrategy<?> strategy = null;
         final Class<? extends DisassembleStrategy> targetStrategy;
+        boolean specified = false;
         if (action.getClass().isAnnotationPresent(Disassembler.class)) {
+            specified = true;
             targetStrategy = action.getClass().getAnnotation(Disassembler.class).value();
         } else {
             targetStrategy = DEFAULT_DISASSEMBLING_STRATEGY;
@@ -74,7 +76,20 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
             throw new IllegalStateException("Disassembler not found: " + targetStrategy.getCanonicalName());
         }
         if (!strategy.accepts(action)) {
-            throw new IllegalStateException("Specified strategy does not recognize action: " + action.getClass().getCanonicalName());
+            if (specified) {
+                throw new IllegalStateException("Specified strategy does not recognize action: " + action.getClass().getCanonicalName());
+            } else {
+                strategy = null;
+                for (DisassembleStrategy disassembler : disassemblers) {
+                    //noinspection unchecked
+                    if (disassembler.accepts(action)) {
+                        strategy = disassembler;
+                    }
+                }
+                if (strategy == null) {
+                    throw new IllegalStateException("No strategy could be found to disassemble action: " + action.getClass().getCanonicalName());
+                }
+            }
         }
         //noinspection unchecked
         return new ActionWrapper(action, strategy);
