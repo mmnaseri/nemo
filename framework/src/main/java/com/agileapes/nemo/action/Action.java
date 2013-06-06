@@ -42,7 +42,7 @@ import java.io.PrintStream;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 16:35)
  */
-public abstract class Action implements BeanNameAware {
+public abstract class Action implements BeanNameAware, Comparable<Action> {
 
     private String name;
     private boolean defaultAction;
@@ -76,6 +76,11 @@ public abstract class Action implements BeanNameAware {
 
     public void setInternal(boolean internal) {
         this.internal = internal;
+    }
+
+    @Override
+    public int compareTo(Action o) {
+        return getName().compareTo(o.getName());
     }
 
     /**
