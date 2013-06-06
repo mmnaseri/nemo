@@ -25,7 +25,7 @@ public class Runner {
 
     public static void main(String[] args) throws Exception {
         try {
-            Executor.execute("-x");
+            Executor.execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + e.getMessage());
             System.exit(1);
