@@ -22,6 +22,7 @@ import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.Filter;
 import com.agileapes.nemo.util.ReflectionUtils;
 
+import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -32,7 +33,7 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 17:06)
  */
-public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStrategy {
+public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStrategy<Action> {
 
     @Override
     public Set<OptionDescriptor> getOptions(Action action) {
@@ -75,6 +76,11 @@ public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStra
         } catch (Throwable e) {
             throw new IllegalStateException("Could not set value for option: " + name, e);
         }
+    }
+
+    @Override
+    public void perform(Action action, PrintStream output) throws Exception {
+        action.perform(output);
     }
 
 }

@@ -45,12 +45,14 @@ public class ListAction extends Action {
             throw new Exception("Could not get the list of files under current directory");
         }
         int i = 0;
-        System.out.println("There are " + files.length + " files under " + current.getAbsolutePath());
+        output.println("There are " + files.length + " files under " + current.getAbsolutePath());
         for (File file : files) {
             if (numbers) {
-                System.out.print((++i) + "\t");
+                output.print((++i) + "\t");
             }
-            System.out.println(file.getAbsolutePath());
+            output.print(file.length());
+            output.print("\t ");
+            output.println(file.getName());
         }
     }
 }

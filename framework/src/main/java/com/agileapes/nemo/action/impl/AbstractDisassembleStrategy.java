@@ -15,7 +15,6 @@
 
 package com.agileapes.nemo.action.impl;
 
-import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.DisassembleStrategy;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.value.ValueReaderContext;
@@ -26,7 +25,7 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 17:26)
  */
-public abstract class AbstractDisassembleStrategy implements DisassembleStrategy {
+public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrategy<A> {
 
     private ValueReaderContext readerContext;
 
@@ -36,7 +35,7 @@ public abstract class AbstractDisassembleStrategy implements DisassembleStrategy
     }
 
     @Override
-    public void reset(Action action) {
+    public void reset(A action) {
         final Set<OptionDescriptor> options = getOptions(action);
         for (OptionDescriptor option : options) {
             setOption(action, option.getName(), "null");
@@ -44,7 +43,7 @@ public abstract class AbstractDisassembleStrategy implements DisassembleStrategy
     }
 
     @Override
-    public void setOption(Action action, String name, String value) {
+    public void setOption(A action, String name, String value) {
         final Set<OptionDescriptor> options = getOptions(action);
         OptionDescriptor target = null;
         for (OptionDescriptor option : options) {
@@ -83,6 +82,6 @@ public abstract class AbstractDisassembleStrategy implements DisassembleStrategy
         setOption(action, name, converted);
     }
 
-    public abstract void setOption(Action action, String name, Object value);
+    public abstract void setOption(A action, String name, Object value);
 
 }
