@@ -15,7 +15,7 @@
 
 package com.agileapes.nemo.demo;
 
-import com.agileapes.nemo.exec.Executor;
+import com.agileapes.nemo.exec.Bootstrap;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
@@ -25,9 +25,10 @@ public class Runner {
 
     public static void main(String[] args) throws Exception {
         try {
-            Executor.execute(args);
+            Bootstrap.load().execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + e.getMessage());
+            e.printStackTrace();
             System.exit(1);
         }
     }

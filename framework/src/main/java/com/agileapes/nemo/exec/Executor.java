@@ -24,6 +24,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.PrintStream;
@@ -44,23 +45,14 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 16:35)
  */
-public class Executor implements BeanPostProcessor {
+public class Executor implements BeanPostProcessor, ApplicationContextAware {
 
     private final Set<Action> actions = new CopyOnWriteArraySet<Action>();
     private Action defaultAction;
     private ApplicationContext context;
-    private final String[] args;
-    private final PrintStream output;
+    private String[] args;
+    private PrintStream output;
     private Execution execution = null;
-
-    public Executor(String[] args) {
-        this(System.out, args);
-    }
-
-    public Executor(PrintStream output, String[] args) {
-        this.output = output;
-        this.args = args;
-    }
 
     /**
      * @return the set of actions discovered by the framework
@@ -93,10 +85,7 @@ public class Executor implements BeanPostProcessor {
      * This method will load the application context and expose the executor via {@link ExecutorAware}
      */
     private void prepareContext() {
-        if (this.context != null) {
-            throw new IllegalStateException("You cannot execute the same context twice.");
-        }
-        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/context.xml", "nemo/exec*.xml");
+        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/nemo.xml", "nemo/exec*.xml");
         context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
             @Override
             public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -198,37 +187,34 @@ public class Executor implements BeanPostProcessor {
         action.perform(output);
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        context = applicationContext;
+    }
+
     /**
      * This method will execute the application based on the given arguments. As execution only
      * holds meaning for a single time, calling execute more than once will result in an
      * {@link IllegalStateException}.
      * @throws Exception
      */
-    public void execute() throws Exception {
-        prepareContext();
+    public void execute(String... args) throws Exception {
+        execute(System.out, args);
+    }
+
+    /**
+     * This method will execute the application based on the given arguments. As execution only
+     * holds meaning for a single time, calling execute more than once will result in an
+     * {@link IllegalStateException}.
+     * @throws Exception
+     */
+    public void execute(PrintStream output, String... args) throws Exception {
+        this.output = output;
+        this.args = args;
+        if (context == null) {
+            prepareContext();
+        }
         prepareActions();
         perform(getExecution());
     }
-
-    /**
-     * This shorthand method is only made available so that by statically importing it
-     * your code will look less cluttered.
-     * @param output  the output to the system
-     * @param args    the arguments to the application as they are
-     * @throws Exception
-     */
-    public static void execute(PrintStream output, String... args) throws Exception {
-        new Executor(output, args).execute();
-    }
-
-    /**
-     * This shorthand method is only made available so that by statically importing it
-     * your code will look less cluttered.
-     * @param args    the arguments to the application as they are
-     * @throws Exception
-     */
-    public static void execute(String... args) throws Exception {
-        new Executor(args).execute();
-    }
-
 }
