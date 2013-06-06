@@ -64,7 +64,7 @@ public class UsageAction extends Action implements ExecutorAware {
             output.print(target);
             output.print(" ");
             final Action action = executor.getAction(target);
-            final ArrayList<OptionDescriptor> descriptors = new ArrayList<OptionDescriptor>(((ActionWrapper) action).getOptions());
+            final ArrayList<OptionDescriptor> descriptors = new ArrayList<OptionDescriptor>(((ActionWrapper<?>) action).getOptions());
             Collections.sort(descriptors);
             for (Iterator<OptionDescriptor> iterator = descriptors.iterator(); iterator.hasNext(); ) {
                 final OptionDescriptor descriptor = iterator.next();
