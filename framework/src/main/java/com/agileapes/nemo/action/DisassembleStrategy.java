@@ -13,18 +13,23 @@
  * or substantial portions of the Software.
  */
 
-package com.agileapes.nemo.demo;
+package com.agileapes.nemo.action;
 
-import com.agileapes.nemo.exec.Executor;
+import com.agileapes.nemo.option.OptionDescriptor;
+import com.agileapes.nemo.value.ValueReaderContextAware;
+
+import java.util.Set;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 20:33)
+ * @since 1.0 (2013/6/6, 16:47)
  */
-public class Runner {
+public interface DisassembleStrategy extends ValueReaderContextAware {
 
-    public static void main(String[] args) throws Exception {
-        Executor.execute(System.out, "list");
-    }
+    void reset(Action action);
+
+    Set<OptionDescriptor> getOptions(Action action);
+
+    void setOption(Action action, String name, String value);
 
 }

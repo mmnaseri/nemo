@@ -13,18 +13,23 @@
  * or substantial portions of the Software.
  */
 
-package com.agileapes.nemo.demo;
+package com.agileapes.nemo.api;
 
-import com.agileapes.nemo.exec.Executor;
+import com.agileapes.nemo.action.DisassembleStrategy;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 20:33)
+ * @since 1.0 (2013/6/6, 16:48)
  */
-public class Runner {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Disassembler {
 
-    public static void main(String[] args) throws Exception {
-        Executor.execute(System.out, "list");
-    }
+    Class<? extends DisassembleStrategy> value();
 
 }

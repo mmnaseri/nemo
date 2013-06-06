@@ -16,6 +16,7 @@
 package com.agileapes.nemo.value.impl;
 
 import com.agileapes.nemo.value.ValueReader;
+import com.agileapes.nemo.value.ValueReaderContextAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -31,6 +32,11 @@ public class SpringValueReaderContext extends DefaultValueReaderContext implemen
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        handleValueReaders(beanFactory);
+        handleContextAwareBeans(beanFactory);
+    }
+
+    private void handleValueReaders(ConfigurableListableBeanFactory beanFactory) {
         final String[] names = beanFactory.getBeanNamesForType(ValueReader.class);
         for (String name : names) {
             if (beanFactory.isSingleton(name)) {
@@ -38,6 +44,15 @@ public class SpringValueReaderContext extends DefaultValueReaderContext implemen
                 if (!reader.equals(this)) {
                     add(reader);
                 }
+            }
+        }
+    }
+
+    private void handleContextAwareBeans(ConfigurableListableBeanFactory beanFactory) {
+        final String[] names = beanFactory.getBeanNamesForType(ValueReaderContextAware.class);
+        for (String name : names) {
+            if (beanFactory.isSingleton(name)) {
+                beanFactory.getBean(name, ValueReaderContextAware.class).setValueReaderContext(this);
             }
         }
     }

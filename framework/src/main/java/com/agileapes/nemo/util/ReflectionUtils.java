@@ -61,6 +61,10 @@ public class ReflectionUtils {
         return name;
     }
 
+    public static String getSetterName(String propertyName) {
+        return "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+    }
+
     private static class Name {
 
         private String singular;

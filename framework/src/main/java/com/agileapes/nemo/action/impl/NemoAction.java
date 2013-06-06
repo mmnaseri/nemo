@@ -13,8 +13,9 @@
  * or substantial portions of the Software.
  */
 
-package com.agileapes.nemo.action;
+package com.agileapes.nemo.action.impl;
 
+import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 

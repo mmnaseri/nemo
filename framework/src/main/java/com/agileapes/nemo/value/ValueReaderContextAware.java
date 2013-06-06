@@ -13,18 +13,14 @@
  * or substantial portions of the Software.
  */
 
-package com.agileapes.nemo.demo;
-
-import com.agileapes.nemo.exec.Executor;
+package com.agileapes.nemo.value;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/4, 20:33)
+ * @since 1.0 (2013/6/6, 17:15)
  */
-public class Runner {
+public interface ValueReaderContextAware {
 
-    public static void main(String[] args) throws Exception {
-        Executor.execute(System.out, "list");
-    }
+    void setValueReaderContext(ValueReaderContext valueReaderContext);
 
 }
