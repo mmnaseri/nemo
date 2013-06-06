@@ -79,8 +79,28 @@ public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStra
     }
 
     @Override
+    public boolean accepts(Object item) {
+        return item instanceof Action;
+    }
+
+    @Override
     public void perform(Action action, PrintStream output) throws Exception {
         action.perform(output);
+    }
+
+    @Override
+    public String getName(Action action) {
+        return action.getName();
+    }
+
+    @Override
+    public boolean isDefaultAction(Action action) {
+        return action.isDefaultAction();
+    }
+
+    @Override
+    public boolean isInternal(Action action) {
+        return action.isInternal();
     }
 
 }

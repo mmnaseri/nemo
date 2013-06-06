@@ -42,6 +42,28 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
         }
     }
 
+    private void setOption(A action, String name, Class<?> type, String value) {
+        Object converted = readerContext.read(value, type);
+        if (converted == null && type.isPrimitive()) {
+            if (type.equals(int.class)) {
+                converted = 0;
+            } else if (type.equals(long.class)) {
+                converted = 0L;
+            } else if (type.equals(short.class)) {
+                converted = (short) 0;
+            } else if (type.equals(float.class)) {
+                converted = 0.0;
+            } else if (type.equals(double.class)) {
+                converted = 0.0d;
+            } else if (type.equals(char.class)) {
+                converted = (char) 0;
+            } else if (type.equals(boolean.class)) {
+                converted = false;
+            }
+        }
+        setOption(action, name, converted);
+    }
+
     @Override
     public void setOption(A action, String name, String value) {
         final Set<OptionDescriptor> options = getOptions(action);
@@ -50,36 +72,44 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
             if (option.getName().equals(name)) {
                 target = option;
                 break;
-            } else if (option.getAlias() != null && name.length() == 1 && option.getAlias().toString().equals(name)) {
-                target = option;
-                break;
-            } else if (option.getIndex() != null && name.matches("%\\d+") && option.getIndex().equals(Integer.parseInt(name.substring(1)))) {
-                target = option;
-                break;
             }
         }
         if (target == null) {
             throw new IllegalArgumentException("No such option: " + name);
         }
-        Object converted = readerContext.read(value, target.getType());
-        if (converted == null && target.getType().isPrimitive()) {
-            if (target.getType().equals(int.class)) {
-                converted = 0;
-            } else if (target.getType().equals(long.class)) {
-                converted = 0L;
-            } else if (target.getType().equals(short.class)) {
-                converted = (short) 0;
-            } else if (target.getType().equals(float.class)) {
-                converted = 0.0;
-            } else if (target.getType().equals(double.class)) {
-                converted = 0.0d;
-            } else if (target.getType().equals(char.class)) {
-                converted = (char) 0;
-            } else if (target.getType().equals(boolean.class)) {
-                converted = false;
+        setOption(action, name, target.getType(), value);
+    }
+
+    @Override
+    public void setOption(A action, char alias, String value) {
+        final Set<OptionDescriptor> options = getOptions(action);
+        OptionDescriptor target = null;
+        for (OptionDescriptor option : options) {
+            if (option.getAlias() != null && option.getAlias().equals(alias)) {
+                target = option;
+                break;
             }
         }
-        setOption(action, name, converted);
+        if (target == null) {
+            throw new IllegalArgumentException("No such option: " + alias);
+        }
+        setOption(action, target.getName(), target.getType(), value);
+    }
+
+    @Override
+    public void setOption(A action, int index, String value) {
+        final Set<OptionDescriptor> options = getOptions(action);
+        OptionDescriptor target = null;
+        for (OptionDescriptor option : options) {
+            if (option.getIndex() != null && option.getIndex().equals(index)) {
+                target = option;
+                break;
+            }
+        }
+        if (target == null) {
+            throw new IllegalArgumentException("No such option: %" + index);
+        }
+        setOption(action, target.getName(), target.getType(), value);
     }
 
     public abstract void setOption(A action, String name, Object value);

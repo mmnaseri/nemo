@@ -15,7 +15,6 @@
 
 package com.agileapes.nemo.action.impl;
 
-import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.DisassembleStrategy;
 import com.agileapes.nemo.api.Disassembler;
 import org.springframework.beans.BeansException;
@@ -49,8 +48,11 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
         }
     }
 
-    public ActionWrapper getActionWrapper(Action action) {
-        DisassembleStrategy strategy = null;
+    public ActionWrapper getActionWrapper(Object action) {
+        if (action == null) {
+            throw new NullPointerException();
+        }
+        DisassembleStrategy<?> strategy = null;
         final Class<? extends DisassembleStrategy> targetStrategy;
         if (action.getClass().isAnnotationPresent(Disassembler.class)) {
             targetStrategy = action.getClass().getAnnotation(Disassembler.class).value();
@@ -66,6 +68,11 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
         if (strategy == null) {
             throw new IllegalStateException("Disassembler not found: " + targetStrategy.getCanonicalName());
         }
+        if (!strategy.accepts(action)) {
+            throw new IllegalStateException("Specified strategy does not recognize action: " + action.getClass().getCanonicalName());
+        }
+        //noinspection unchecked
         return new ActionWrapper(action, strategy);
     }
+
 }

@@ -90,7 +90,10 @@ public class Options {
                             options.setFlag(argument.substring(j, j + 1));
                         }
                     } else {
-                        options.setOption(argument.substring(1), arguments.get(i + 1));
+                        if (argument.length() != 2) {
+                            throw new IllegalArgumentException("Invalid argument: " + argument);
+                        }
+                        options.setOption(argument, arguments.get(i + 1));
                         i ++;
                     }
                 } else {

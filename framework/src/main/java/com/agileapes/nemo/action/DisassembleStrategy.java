@@ -16,6 +16,7 @@
 package com.agileapes.nemo.action;
 
 import com.agileapes.nemo.option.OptionDescriptor;
+import com.agileapes.nemo.util.Filter;
 import com.agileapes.nemo.value.ValueReaderContextAware;
 
 import java.io.PrintStream;
@@ -30,7 +31,7 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 16:47)
  */
-public interface DisassembleStrategy<A> extends ValueReaderContextAware {
+public interface DisassembleStrategy<A> extends ValueReaderContextAware, Filter<Object> {
 
     void reset(A action);
 
@@ -38,6 +39,16 @@ public interface DisassembleStrategy<A> extends ValueReaderContextAware {
 
     void setOption(A action, String name, String value);
 
+    void setOption(A action, int index, String value);
+
+    void setOption(A action, char alias, String value);
+
     void perform(A action, PrintStream output) throws Exception;
+
+    String getName(A action);
+
+    boolean isDefaultAction(A action);
+
+    boolean isInternal(A action);
 
 }

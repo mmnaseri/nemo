@@ -26,30 +26,30 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 17:02)
  */
-public class ActionWrapper extends Action {
+public class ActionWrapper<A> extends Action {
 
     public static final String TRUE = "true";
-    private final Action action;
-    private final DisassembleStrategy strategy;
+    private final A action;
+    private final DisassembleStrategy<A> strategy;
 
-    public ActionWrapper(Action action, DisassembleStrategy strategy) {
+    public ActionWrapper(A action, DisassembleStrategy<A> strategy) {
         this.action = action;
         this.strategy = strategy;
     }
 
     @Override
     public String getName() {
-        return action.getName();
+        return strategy.getName(action);
     }
 
     @Override
     public boolean isDefaultAction() {
-        return action.isDefaultAction();
+        return strategy.isDefaultAction(action);
     }
 
     @Override
     public boolean isInternal() {
-        return action.isInternal();
+        return strategy.isInternal(action);
     }
 
     public void reset() {
@@ -61,20 +61,24 @@ public class ActionWrapper extends Action {
     }
 
     public void setOption(String name, String value) {
-        strategy.setOption(action, name, value);
+        if (name.matches("\\-.")) {
+            strategy.setOption(action, name.charAt(1), value);
+        } else {
+            strategy.setOption(action, name, value);
+        }
     }
 
     public void setFlag(String flag) {
-        setOption(flag, TRUE);
+        strategy.setOption(action, flag.charAt(0), TRUE);
     }
 
     public void setIndex(int index, String value) {
-        setOption("%" + index, value);
+        strategy.setOption(action, index, value);
     }
 
     @Override
     public void perform(PrintStream output) throws Exception {
-        action.perform(output);
+        strategy.perform(action, output);
     }
 
 }
