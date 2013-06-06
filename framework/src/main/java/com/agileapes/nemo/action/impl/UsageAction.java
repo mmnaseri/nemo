@@ -16,6 +16,7 @@
 package com.agileapes.nemo.action.impl;
 
 import com.agileapes.nemo.action.Action;
+import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.exec.Executor;
 import com.agileapes.nemo.exec.ExecutorAware;
@@ -31,12 +32,23 @@ import java.util.List;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 18:11)
  */
+@Help(
+        value = "Displays usage information for the application",
+        description = "You can specify a target to see its options and usage information.\n" +
+                "Here, '%APPLICATION%' means the specified command you used to invoke this " +
+                "application."
+)
 public class UsageAction extends Action implements ExecutorAware {
 
     private String target;
     private Executor executor;
 
     @Option(index = 0)
+    @Help(
+            value = "The target for which usage information will be displayed",
+            description = "In this mode, optional arguments will be displayed in a pair of " +
+                    "square brackets and boolean flags will appear without a following value"
+    )
     public void setTarget(String target) {
         this.target = target;
     }

@@ -17,6 +17,7 @@ package com.agileapes.nemo.action.impl;
 
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.DisassembleStrategy;
+import com.agileapes.nemo.option.Metadata;
 import com.agileapes.nemo.option.OptionDescriptor;
 
 import java.io.PrintStream;
@@ -66,6 +67,18 @@ public class ActionWrapper<A> extends Action {
         } else {
             strategy.setOption(action, name, value);
         }
+    }
+
+    public Metadata getMetadata(String name) {
+        return strategy.getMetadata(action, name);
+    }
+
+    public boolean hasMetadata(String name) {
+        return strategy.hasMetadata(action, name);
+    }
+
+    public Set<Metadata> getMetadata() {
+        return strategy.getMetadata(action);
     }
 
     public void setFlag(String flag) {

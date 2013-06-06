@@ -103,4 +103,30 @@ public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStra
         return action.isInternal();
     }
 
+    @Override
+    public Metadata getMetadata(Action action, String name) {
+        final Set<Metadata> set = getMetadata(action);
+        for (Metadata metadata : set) {
+            if (metadata.getName().equals(name)) {
+                return metadata;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean hasMetadata(Action action, String name) {
+        return getMetadata(action, name) != null;
+    }
+
+    @Override
+    public Set<Metadata> getMetadata(Action action) {
+        final Annotation[] annotations = action.getClass().getAnnotations();
+        final HashSet<Metadata> set = new HashSet<Metadata>();
+        for (Annotation annotation : annotations) {
+            set.add(Metadata.fromAnnotation(annotation));
+        }
+        return set;
+    }
+
 }

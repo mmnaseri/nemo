@@ -15,6 +15,7 @@
 
 package com.agileapes.nemo.action;
 
+import com.agileapes.nemo.option.Metadata;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.Filter;
 import com.agileapes.nemo.value.ValueReaderContextAware;
@@ -50,5 +51,11 @@ public interface DisassembleStrategy<A> extends ValueReaderContextAware, Filter<
     boolean isDefaultAction(A action);
 
     boolean isInternal(A action);
+
+    Metadata getMetadata(A action, String name);
+
+    boolean hasMetadata(A action, String name);
+
+    Set<Metadata> getMetadata(A action);
 
 }

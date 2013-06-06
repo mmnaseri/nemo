@@ -92,5 +92,4 @@ public abstract class Action implements BeanNameAware, Comparable<Action> {
      * @throws Exception
      */
     public abstract void perform(PrintStream output) throws Exception;
-
 }

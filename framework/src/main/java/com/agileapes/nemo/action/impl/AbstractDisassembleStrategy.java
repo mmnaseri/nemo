@@ -107,7 +107,7 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
             }
         }
         if (target == null) {
-            throw new IllegalArgumentException("No such option: %" + index);
+            throw new IllegalArgumentException("Invalid argument: " + value);
         }
         setOption(action, target.getName(), target.getType(), value);
     }

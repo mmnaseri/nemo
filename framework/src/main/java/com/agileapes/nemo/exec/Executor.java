@@ -53,6 +53,10 @@ public class Executor implements BeanPostProcessor {
     private final PrintStream output;
     private Execution execution = null;
 
+    public Executor(String[] args) {
+        this(System.out, args);
+    }
+
     public Executor(PrintStream output, String[] args) {
         this.output = output;
         this.args = args;
@@ -215,6 +219,16 @@ public class Executor implements BeanPostProcessor {
      */
     public static void execute(PrintStream output, String... args) throws Exception {
         new Executor(output, args).execute();
+    }
+
+    /**
+     * This shorthand method is only made available so that by statically importing it
+     * your code will look less cluttered.
+     * @param args    the arguments to the application as they are
+     * @throws Exception
+     */
+    public static void execute(String... args) throws Exception {
+        new Executor(args).execute();
     }
 
 }
