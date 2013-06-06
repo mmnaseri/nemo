@@ -24,7 +24,12 @@ import com.agileapes.nemo.exec.Executor;
 public class Runner {
 
     public static void main(String[] args) throws Exception {
-        Executor.execute(args);
+        try {
+            Executor.execute("-x");
+        } catch (Throwable e) {
+            System.err.println("error: " + e.getMessage());
+            System.exit(1);
+        }
     }
 
 }
