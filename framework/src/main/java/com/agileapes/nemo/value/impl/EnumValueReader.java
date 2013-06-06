@@ -18,6 +18,8 @@ package com.agileapes.nemo.value.impl;
 import com.agileapes.nemo.value.ValueReader;
 
 /**
+ * This value reader will accept any enums and read their value from a string input
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/5, 15:45)
  */

@@ -55,12 +55,20 @@ public class ReflectionUtils {
         return methods.toArray(new Method[methods.size()]);
     }
 
+    /**
+     * @param setterName    the name of the setter method
+     * @return the property name for this setter method
+     */
     public static String getPropertyName(String setterName) {
         String name = setterName.substring(3);
         name = name.substring(0, 1).toLowerCase() + (name.length() > 1 ? name.substring(1) : "");
         return name;
     }
 
+    /**
+     * @param propertyName    the name of the property
+     * @return the name of the setter method for this property
+     */
     public static String getSetterName(String propertyName) {
         return "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
     }
@@ -88,7 +96,11 @@ public class ReflectionUtils {
         }
     }
 
-    public static String getTypeValues(Class<?> type) {
+    /**
+     * @param type    the type to be described
+     * @return a textual, human-friendly description for the given type
+     */
+    public static String describeType(Class<?> type) {
         int array = 0;
         while (type.isArray()) {
             array ++;

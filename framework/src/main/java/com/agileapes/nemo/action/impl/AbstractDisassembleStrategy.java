@@ -22,11 +22,16 @@ import com.agileapes.nemo.value.ValueReaderContext;
 import java.util.Set;
 
 /**
+ * This is a helper class that does all the generic actions associated with disassembling
+ * actions.
+ *
+ * @see #setOption(Object, String, Object)
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 17:26)
  */
 public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrategy<A> {
 
+    public static final String NULL = "null";
     private ValueReaderContext readerContext;
 
     @Override
@@ -38,12 +43,20 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
     public void reset(A action) {
         final Set<OptionDescriptor> options = getOptions(action);
         for (OptionDescriptor option : options) {
-            setOption(action, option.getName(), "null");
+            setOption(action, option.getName(), NULL);
         }
     }
 
+    /**
+     * This internal method will do the task of converting a textual representation of a value
+     * to the actual object value expected by the underlying action
+     * @param action    the action
+     * @param name      the <em>name</em> of the option
+     * @param type      the expected type of the value
+     * @param value     the string representation of the value
+     */
     private void setOption(A action, String name, Class<?> type, String value) {
-        Object converted = readerContext.read(value, type);
+        Object converted = value.equals("null") ? null : readerContext.read(value, type);
         if (converted == null && type.isPrimitive()) {
             if (type.equals(int.class)) {
                 converted = 0;
@@ -112,6 +125,15 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
         setOption(action, target.getName(), target.getType(), value);
     }
 
+    /**
+     * This method will be called by the {@link AbstractDisassembleStrategy} class whenever
+     * a value has been successfully converted from its textual representation to its actual
+     * value. Therefore, when implementing this class, there should be no worries of the value
+     * not matching its expected type.
+     * @param action    the action
+     * @param name      the <em>name</em> of the option
+     * @param value     the object value as extracted from the string input value
+     */
     public abstract void setOption(A action, String name, Object value);
 
 }

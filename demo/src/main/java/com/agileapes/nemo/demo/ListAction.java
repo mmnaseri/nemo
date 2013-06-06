@@ -31,7 +31,7 @@ public class ListAction extends Action {
 
     private boolean numbers;
 
-    @Option(alias = 'n')
+    @Option(alias = 'x')
     @Help(value = "Prints sequential file number prior to file path")
     public void setNumbers(boolean numbers) {
         this.numbers = numbers;

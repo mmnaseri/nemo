@@ -87,7 +87,7 @@ public class Options {
                     }
                     if (i == arguments.size() - 1 || arguments.get(i + 1).startsWith("-")) {
                         for (int j = 1; j < argument.length(); j ++) {
-                            options.setFlag(argument.substring(j, j + 1));
+                            options.setFlag("-" + argument.substring(j, j + 1));
                         }
                     } else {
                         if (argument.length() != 2) {

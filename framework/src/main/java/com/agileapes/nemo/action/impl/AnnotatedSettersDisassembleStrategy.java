@@ -30,10 +30,38 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * This strategy relies on the actions being descendants of {@link Action}. Also, it will extract
+ * all metadata information through setter methods annotated using the {@link Option} annotation.
+ *
+ * Moreover, to reset the underlying action, it first looks inside the given actions defining
+ * class and traverses the inheritance hierarchy upwards to find a method such as {@code void reset()},
+ * in which case it will call that method. Otherwise, it will simply nullify all options.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 17:06)
  */
 public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStrategy<Action> {
+
+    @Override
+    public void reset(Action action) {
+        final Method[] methods = ReflectionUtils.getMethods(action.getClass(), new Filter<Method>() {
+            @Override
+            public boolean accepts(Method item) {
+                return item.getName().equals("reset") && item.getParameterTypes().length == 0 &&
+                        item.getReturnType().equals(void.class);
+            }
+        });
+        if (methods.length > 0) {
+            try {
+                methods[0].setAccessible(true);
+                methods[0].invoke(action);
+            } catch (Throwable e) {
+                throw new IllegalStateException("Could not reset action: " + action, e);
+            }
+        } else {
+            super.reset(action);
+        }
+    }
 
     @Override
     public Set<OptionDescriptor> getOptions(Action action) {

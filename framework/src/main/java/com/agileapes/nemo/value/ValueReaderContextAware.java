@@ -16,6 +16,9 @@
 package com.agileapes.nemo.value;
 
 /**
+ * This interface will help the IoC container inject the value reader context available to the
+ * application into the requesting beans
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 17:15)
  */

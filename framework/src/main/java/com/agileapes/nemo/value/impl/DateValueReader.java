@@ -23,6 +23,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * This value reader will read dates (both {@link java.util.Date} and {@link java.sql.Date}, as
+ * they are the most popular formats for dates) using the format <code>yyyy/mm/dd [hh:mm[:ss]]</code>
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/5, 15:56)
  */

@@ -168,7 +168,7 @@ public class HelpAction extends Action implements ExecutorAware {
                     output.println("You can also use '--" + descriptor.getName() + " false' to set its value to false.");
                 } else {
                     output.println(" (value)");
-                    output.println("Value type: " + ReflectionUtils.getTypeValues(descriptor.getType()));
+                    output.println("Value type: " + ReflectionUtils.describeType(descriptor.getType()));
                 }
                 if (!descriptor.hasMetadata(helpMetadata)) {
                     output.println("No help has been provided by the developers.");

@@ -45,8 +45,8 @@ import java.io.PrintStream;
 public abstract class Action implements BeanNameAware, Comparable<Action> {
 
     private String name;
-    private boolean defaultAction;
-    private boolean internal;
+    private boolean defaultAction = false;
+    private boolean internal = false;
 
     /**
      * This method returns the name of this action. Names must be unique
@@ -62,18 +62,32 @@ public abstract class Action implements BeanNameAware, Comparable<Action> {
         this.name = name;
     }
 
+    /**
+     * @return {@code true} if this action is the default action
+     */
     public boolean isDefaultAction() {
         return defaultAction;
     }
 
+    /**
+     * This is to help identify default actions at runtime
+     * @param defaultAction    {@code true} if this action should be marked as the default action
+     */
     public void setDefaultAction(boolean defaultAction) {
         this.defaultAction = defaultAction;
     }
 
+    /**
+     * @return {@code true} if this action must not be called from the command-line
+     */
     public boolean isInternal() {
         return internal;
     }
 
+    /**
+     * This is to help set internal-status of an action at runtime.
+     * @param internal    whether this action is an internal action or not.
+     */
     public void setInternal(boolean internal) {
         this.internal = internal;
     }

@@ -25,10 +25,10 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * The action wrapper carries the duty of converting String values to object values using
- * {@link com.agileapes.nemo.value.ValueReader}s. This class is basically the glue which
- * holds the underlying system together.
- * 
+ * The action disassembler will take care of discovering all disassembling strategies found in the
+ * classpath through the Spring application context files, and disassemble actions through them.
+ *
+ * @see #getActionWrapper(Object)
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 18:54)
  */
@@ -42,12 +42,17 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
         final String[] names = beanFactory.getBeanNamesForType(DisassembleStrategy.class);
         for (String name : names) {
             if (beanFactory.isSingleton(name)) {
-                final DisassembleStrategy bean = beanFactory.getBean(name, DisassembleStrategy.class);
-                disassemblers.add(bean);
+                disassemblers.add(beanFactory.getBean(name, DisassembleStrategy.class));
             }
         }
     }
 
+    /**
+     * This method will find the proper action disassembling strategy for the given action and
+     * return an action wrapper that has access to that strategy.
+     * @param action    the action
+     * @return the wrapper
+     */
     public ActionWrapper getActionWrapper(Object action) {
         if (action == null) {
             throw new NullPointerException();

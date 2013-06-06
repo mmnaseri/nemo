@@ -23,6 +23,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation is used to specify the {@link DisassembleStrategy} which will be used to disassemble
+ * the annotated action. Please note that the class which is annotated with this annotation must
+ * be designed to meet the criteria set via {@link DisassembleStrategy#accepts(Object)} so that
+ * the specified strategy does not reject it.
+ *
+ * @see DisassembleStrategy
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/6, 16:48)
  */
