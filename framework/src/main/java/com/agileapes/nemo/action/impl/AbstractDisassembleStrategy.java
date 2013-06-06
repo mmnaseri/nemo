@@ -17,6 +17,7 @@ package com.agileapes.nemo.action.impl;
 
 import com.agileapes.nemo.action.DisassembleStrategy;
 import com.agileapes.nemo.option.OptionDescriptor;
+import com.agileapes.nemo.util.ReflectionUtils;
 import com.agileapes.nemo.value.ValueReaderContext;
 
 import java.util.Set;
@@ -56,7 +57,12 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
      * @param value     the string representation of the value
      */
     private void setOption(A action, String name, Class<?> type, String value) {
-        Object converted = value.equals("null") ? null : readerContext.read(value, type);
+        Object converted = null;
+        try {
+            converted = value.equals("null") ? null : readerContext.read(value, type);
+        } catch (Throwable e) {
+            throw new IllegalArgumentException("Expected " + ReflectionUtils.describeType(type) + " while got '" + value + "'");
+        }
         if (converted == null && type.isPrimitive()) {
             if (type.equals(int.class)) {
                 converted = 0;
@@ -78,7 +84,7 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
     }
 
     @Override
-    public void setOption(A action, String name, String value) {
+    public String setOption(A action, String name, String value) {
         final Set<OptionDescriptor> options = getOptions(action);
         OptionDescriptor target = null;
         for (OptionDescriptor option : options) {
@@ -91,10 +97,11 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
             throw new IllegalArgumentException("No such option: " + name);
         }
         setOption(action, name, target.getType(), value);
+        return name;
     }
 
     @Override
-    public void setOption(A action, char alias, String value) {
+    public String setOption(A action, char alias, String value) {
         final Set<OptionDescriptor> options = getOptions(action);
         OptionDescriptor target = null;
         for (OptionDescriptor option : options) {
@@ -107,10 +114,11 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
             throw new IllegalArgumentException("No such option: " + alias);
         }
         setOption(action, target.getName(), target.getType(), value);
+        return target.getName();
     }
 
     @Override
-    public void setOption(A action, int index, String value) {
+    public String setOption(A action, int index, String value) {
         final Set<OptionDescriptor> options = getOptions(action);
         OptionDescriptor target = null;
         for (OptionDescriptor option : options) {
@@ -123,6 +131,7 @@ public abstract class AbstractDisassembleStrategy<A> implements DisassembleStrat
             throw new IllegalArgumentException("Invalid argument: " + value);
         }
         setOption(action, target.getName(), target.getType(), value);
+        return target.getName();
     }
 
     /**

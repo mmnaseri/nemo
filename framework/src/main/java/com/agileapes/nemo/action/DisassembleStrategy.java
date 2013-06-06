@@ -62,24 +62,27 @@ public interface DisassembleStrategy<A> extends ValueReaderContextAware, Filter<
      * @param action    the action
      * @param name      the name of the option
      * @param value     the string representation for this option's value
+     * @return the name of the option being set
      */
-    void setOption(A action, String name, String value);
+    String setOption(A action, String name, String value);
 
     /**
      * This method will set the value for the given option based on its numerical index
      * @param action    the action
      * @param index     the index of the option
      * @param value     the string representation for this option's value
+     * @return the name of the option being set
      */
-    void setOption(A action, int index, String value);
+    String setOption(A action, int index, String value);
 
     /**
      * This method will set the value for the given option based on its alias
      * @param action    the action
      * @param alias     the alias of the option
      * @param value     the string representation for this option's value
+     * @return the name of the option being set
      */
-    void setOption(A action, char alias, String value);
+    String setOption(A action, char alias, String value);
 
     /**
      * This method will carry out the task assigned to the action by delegation

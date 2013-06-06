@@ -21,6 +21,7 @@ import com.agileapes.nemo.option.Metadata;
 import com.agileapes.nemo.option.OptionDescriptor;
 
 import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -36,10 +37,19 @@ public class ActionWrapper<A> extends Action {
     public static final String TRUE = "true";
     private final A action;
     private final DisassembleStrategy<A> strategy;
+    private Set<OptionDescriptor> options;
+    private Set<String> required = new HashSet<String>();
+
 
     public ActionWrapper(A action, DisassembleStrategy<A> strategy) {
         this.action = action;
         this.strategy = strategy;
+        options = strategy.getOptions(action);
+        for (OptionDescriptor option : options) {
+            if (option.isRequired()) {
+                required.add(option.getName());
+            }
+        }
     }
 
     @Override
@@ -75,7 +85,7 @@ public class ActionWrapper<A> extends Action {
      * @return a set of all options associated with this action
      */
     public Set<OptionDescriptor> getOptions() {
-        return strategy.getOptions(action);
+        return options;
     }
 
     /**
@@ -85,11 +95,13 @@ public class ActionWrapper<A> extends Action {
      * @param value    the textual representation of the option's value
      */
     public void setOption(String name, String value) {
+        final String option;
         if (name.matches("\\-.")) {
-            strategy.setOption(action, name.charAt(1), value);
+            option = strategy.setOption(action, name.charAt(1), value);
         } else {
-            strategy.setOption(action, name, value);
+            option = strategy.setOption(action, name, value);
         }
+        required.remove(option);
     }
 
     /**
@@ -97,11 +109,13 @@ public class ActionWrapper<A> extends Action {
      * @param flag    the name of the flag
      */
     public void setFlag(String flag) {
+        final String option;
         if (flag.matches("\\-.")) {
-            strategy.setOption(action, flag.charAt(1), TRUE);
+            option = strategy.setOption(action, flag.charAt(1), TRUE);
         } else {
-            strategy.setOption(action, flag, TRUE);
+            option = strategy.setOption(action, flag, TRUE);
         }
+        required.remove(option);
     }
 
     /**
@@ -110,7 +124,7 @@ public class ActionWrapper<A> extends Action {
      * @param value    the value of the option
      */
     public void setIndex(int index, String value) {
-        strategy.setOption(action, index, value);
+        required.remove(strategy.setOption(action, index, value));
     }
 
     /**
@@ -146,6 +160,9 @@ public class ActionWrapper<A> extends Action {
      */
     @Override
     public void perform(PrintStream output) throws Exception {
+        if (!required.isEmpty()) {
+            throw new IllegalStateException("Value missing for required options: " + required);
+        }
         strategy.perform(action, output);
     }
 
