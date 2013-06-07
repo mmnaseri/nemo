@@ -25,7 +25,7 @@ public class Runner {
 
     public static void main(String[] args) throws Exception {
         try {
-            Bootstrap.load().execute(args);
+            Bootstrap.load("/nemo/execution.xml", "usage").execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + e.getMessage());
             e.printStackTrace();

@@ -24,7 +24,6 @@ import com.agileapes.nemo.option.Options;
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -48,7 +47,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 16:35)
  */
-public class Executor implements BeanPostProcessor, ApplicationContextAware {
+public class Executor implements BeanFactoryPostProcessor, ApplicationContextAware {
 
     private final static Logger logger = Logger.getLogger(Executor.class);
     private final Set<Action> actions = new CopyOnWriteArraySet<Action>();
@@ -58,6 +57,7 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
     private PrintStream output;
     private Execution execution = null;
     private Multicaster multicaster;
+    private String defaultActionName;
 
     /**
      * @return the set of actions discovered by the framework
@@ -74,17 +74,15 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
     }
 
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof ExecutorAware) {
-            logger.debug("Bean requesting access to the executor: " + beanName);
-            ((ExecutorAware) bean).setExecutor(this);
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        final String[] names = beanFactory.getBeanNamesForType(ExecutorAware.class);
+        for (String name : names) {
+            if (!beanFactory.isSingleton(name)) {
+                logger.info("Refusing service to non-singleton bean: " + name);
+                continue;
+            }
+            beanFactory.getBean(name, ExecutorAware.class).setExecutor(this);
         }
-        return bean;
-    }
-
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        return bean;
     }
 
     /**
@@ -94,12 +92,7 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
         logger.info("Preparing fallback application context");
         logger.warn("This method is not recommended, as it is much slower. Use " + Bootstrap.class.getCanonicalName() + ".load() instead");
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/nemo.xml", "nemo/exec*.xml");
-        context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
-            @Override
-            public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-                beanFactory.addBeanPostProcessor(Executor.this);
-            }
-        });
+        context.addBeanFactoryPostProcessor(this);
         context.refresh();
         this.context = context;
     }
@@ -129,6 +122,9 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
                 logger.debug("Wrapping action " + name + " ...");
                 final Action action = disassembler.getActionWrapper(context.getBean(name));
                 action.setBeanName(name);
+                if (action.getName().equals(defaultActionName)) {
+                    action.setDefaultAction(true);
+                }
                 if (action.isDefaultAction()) {
                     logger.debug("Action " + name + " marked as default");
                     if (action.isInternal()) {
@@ -232,6 +228,10 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
         multicaster.publishEvent(new AfterActionPerformedEvent(this, action));
     }
 
+    void setDefaultActionName(String defaultActionName) {
+        this.defaultActionName = defaultActionName;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context = applicationContext;
@@ -266,5 +266,4 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
         perform(getExecution());
         multicaster.publishEvent(new ApplicationShutdownEvent(this));
     }
-
 }

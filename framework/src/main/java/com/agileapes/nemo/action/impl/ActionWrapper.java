@@ -39,6 +39,7 @@ public class ActionWrapper<A> extends Action {
     private final DisassembleStrategy<A> strategy;
     private Set<OptionDescriptor> options;
     private Set<String> required = new HashSet<String>();
+    private boolean externallySetDefaultAction;
 
 
     public ActionWrapper(A action, DisassembleStrategy<A> strategy) {
@@ -52,12 +53,17 @@ public class ActionWrapper<A> extends Action {
         }
     }
 
+    @Override
+    public void setDefaultAction(boolean defaultAction) {
+        externallySetDefaultAction = defaultAction;
+    }
+
     /**
      * @return {@code true} if this action is the default action
      */
     @Override
     public boolean isDefaultAction() {
-        return strategy.isDefaultAction(action);
+        return externallySetDefaultAction || strategy.isDefaultAction(action);
     }
 
     /**
