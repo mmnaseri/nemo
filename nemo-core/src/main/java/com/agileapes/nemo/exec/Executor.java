@@ -44,6 +44,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * &nbsp;&nbsp;&nbsp;&nbsp;Executor.execute(args);<br/>
  * }</code></p>
  *
+ * A better, faster way to start up your application would be by using the
+ * {@link Bootstrap} class' various loaders. They are designed to be faster,
+ * and burden the application with less startup overhead.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 16:35)
  */
