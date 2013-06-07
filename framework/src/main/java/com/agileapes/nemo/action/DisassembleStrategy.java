@@ -94,12 +94,6 @@ public interface DisassembleStrategy<A> extends ValueReaderContextAware, Filter<
 
     /**
      * @param action    the action
-     * @return the unique, addressable name of the action
-     */
-    String getName(A action);
-
-    /**
-     * @param action    the action
      * @return {@code true} if this action is supposed to be the default action
      */
     boolean isDefaultAction(A action);

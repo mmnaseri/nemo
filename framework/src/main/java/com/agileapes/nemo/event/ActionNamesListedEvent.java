@@ -18,29 +18,32 @@ package com.agileapes.nemo.event;
 import com.agileapes.nemo.exec.Executor;
 import org.springframework.context.ApplicationEvent;
 
+import java.util.List;
+
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/7, 4:03)
  */
 public class ActionNamesListedEvent extends ApplicationEvent {
 
-    private String[] names;
+    private List<String> names;
 
     /**
      * Create a new ApplicationEvent.
      *
      * @param executor the component that published the event (never {@code null})
+     * @param names    the names of the discovererd action
      */
-    public ActionNamesListedEvent(Executor executor, String[] names) {
+    public ActionNamesListedEvent(Executor executor, List<String> names) {
         super(executor);
         this.names = names;
     }
 
-    public String[] getNames() {
+    public List<String> getNames() {
         return names;
     }
 
-    public void setNames(String[] names) {
+    public void setNames(List<String> names) {
         this.names = names;
     }
 

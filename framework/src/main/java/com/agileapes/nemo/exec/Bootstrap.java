@@ -17,6 +17,7 @@ package com.agileapes.nemo.exec;
 
 import com.agileapes.nemo.event.Multicaster;
 import com.agileapes.nemo.event.NemoBootstrappedEvent;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -51,6 +52,8 @@ import java.util.regex.Pattern;
 public class Bootstrap {
 
     public static final String NEMO_EXECUTOR = "nemoExecutor";
+    public static final String NEMO_EXECUTION_DEFAULT = "/nemo/execution.xml";
+    private static final Logger logger = Logger.getLogger(Bootstrap.class);
 
     /**
      * This method loads the application context file for nemo from the
@@ -102,16 +105,19 @@ public class Bootstrap {
      * @throws Exception
      */
     public static Executor load(ConfigurableApplicationContext applicationContext) throws Exception{
+        logger.info("Building nemo backbone context configuration");
         final StaticApplicationContext context = new StaticApplicationContext();
         applicationContext.setParent(context);
         final Map<String, Class<?>> map = getBeansDefinitions();
         map.put(NEMO_EXECUTOR, Executor.class);
         for (Map.Entry<String, Class<?>> entry : map.entrySet()) {
+            logger.debug("Adding singleton bean of type <" + entry.getValue().getCanonicalName() + "> with unique identifier: " + entry.getKey());
             context.registerSingleton(entry.getKey(), entry.getValue());
         }
         context.refresh();
         for (final Class<?> type : map.values()) {
             if (BeanPostProcessor.class.isAssignableFrom(type)) {
+                logger.debug("Registering bean post processor of type " + type.getCanonicalName());
                 applicationContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
                     @Override
                     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -120,11 +126,13 @@ public class Bootstrap {
                 });
             }
             if (BeanFactoryPostProcessor.class.isAssignableFrom(type)) {
+                logger.debug("Registering bean factory post processor of type " + type.getCanonicalName());
                 applicationContext.addBeanFactoryPostProcessor((BeanFactoryPostProcessor) context.getBean(type));
             }
         }
         applicationContext.refresh();
         final ConfigurableApplicationContext bootstrappedContext = new Multicaster(applicationContext).publishEvent(new NemoBootstrappedEvent(applicationContext)).getApplicationContext();
+        logger.info("Context config file bootstrapped, dispensing executor");
         final Executor executor = bootstrappedContext.getBean(Executor.class);
         executor.setApplicationContext(bootstrappedContext);
         return executor;
@@ -139,10 +147,12 @@ public class Bootstrap {
      * @see #load(org.springframework.context.ConfigurableApplicationContext)
      */
     public static Executor load() throws Exception {
-        final URL resource = Bootstrap.class.getResource("/nemo/execution.xml");
+        logger.info("Loading execution context from predesignated file :" + NEMO_EXECUTION_DEFAULT);
+        final URL resource = Bootstrap.class.getResource(NEMO_EXECUTION_DEFAULT);
         if (resource == null) {
-            throw new FileNotFoundException("File /nemo/execution.xml not found under the running module.");
+            throw new FileNotFoundException("File " + NEMO_EXECUTION_DEFAULT + " not found under the running module.");
         }
         return load(new FileSystemXmlApplicationContext(resource.toExternalForm()));
     }
+
 }

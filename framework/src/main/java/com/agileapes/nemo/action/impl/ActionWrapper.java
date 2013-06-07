@@ -52,11 +52,6 @@ public class ActionWrapper<A> extends Action {
         }
     }
 
-    @Override
-    public String getName() {
-        return strategy.getName(action);
-    }
-
     /**
      * @return {@code true} if this action is the default action
      */

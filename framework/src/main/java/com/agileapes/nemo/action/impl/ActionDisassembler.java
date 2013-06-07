@@ -17,6 +17,7 @@ package com.agileapes.nemo.action.impl;
 
 import com.agileapes.nemo.action.DisassembleStrategy;
 import com.agileapes.nemo.api.Disassembler;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -36,12 +37,14 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
 
     public static final Class<? extends DisassembleStrategy> DEFAULT_DISASSEMBLING_STRATEGY = AnnotatedSettersDisassembleStrategy.class;
     private final Set<DisassembleStrategy> disassemblers = new CopyOnWriteArraySet<DisassembleStrategy>();
+    private final static Logger logger = Logger.getLogger(ActionDisassembler.class);
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         final String[] names = beanFactory.getBeanNamesForType(DisassembleStrategy.class);
         for (String name : names) {
             if (beanFactory.isSingleton(name)) {
+                logger.info("Discovered disassembling strategy " + name);
                 disassemblers.add(beanFactory.getBean(name, DisassembleStrategy.class));
             }
         }
@@ -64,6 +67,7 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
             specified = true;
             targetStrategy = action.getClass().getAnnotation(Disassembler.class).value();
         } else {
+            logger.info("Falling back to default disassembling strategy: " + DEFAULT_DISASSEMBLING_STRATEGY.getCanonicalName());
             targetStrategy = DEFAULT_DISASSEMBLING_STRATEGY;
         }
         for (DisassembleStrategy disassembler : disassemblers) {
@@ -79,11 +83,14 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
             if (specified) {
                 throw new IllegalStateException("Specified strategy does not recognize action: " + action.getClass().getCanonicalName());
             } else {
+                logger.info("Default disassembling strategy does not accept action, looking for a fallback");
                 strategy = null;
                 for (DisassembleStrategy disassembler : disassemblers) {
                     //noinspection unchecked
                     if (disassembler.accepts(action)) {
+                        logger.info("Found fallback strategy: " + disassembler.getClass().getCanonicalName());
                         strategy = disassembler;
+                        break;
                     }
                 }
                 if (strategy == null) {
@@ -91,6 +98,7 @@ public class ActionDisassembler implements BeanFactoryPostProcessor {
                 }
             }
         }
+        logger.info("Prepared action wrapper ...");
         //noinspection unchecked
         return new ActionWrapper(action, strategy);
     }

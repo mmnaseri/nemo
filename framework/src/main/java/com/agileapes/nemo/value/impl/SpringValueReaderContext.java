@@ -17,6 +17,7 @@ package com.agileapes.nemo.value.impl;
 
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderContextAware;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -30,6 +31,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  */
 public class SpringValueReaderContext extends DefaultValueReaderContext implements BeanFactoryPostProcessor {
 
+    private static final Logger logger = Logger.getLogger(SpringValueReaderContext.class);
+
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         handleValueReaders(beanFactory);
@@ -40,6 +43,7 @@ public class SpringValueReaderContext extends DefaultValueReaderContext implemen
         final String[] names = beanFactory.getBeanNamesForType(ValueReader.class);
         for (String name : names) {
             if (beanFactory.isSingleton(name)) {
+                logger.info("Discovered value reader " + name);
                 final ValueReader reader = beanFactory.getBean(name, ValueReader.class);
                 if (!reader.equals(this)) {
                     add(reader);

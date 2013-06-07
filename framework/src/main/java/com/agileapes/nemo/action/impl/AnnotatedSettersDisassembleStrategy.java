@@ -21,6 +21,7 @@ import com.agileapes.nemo.option.Metadata;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.Filter;
 import com.agileapes.nemo.util.ReflectionUtils;
+import org.apache.log4j.Logger;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -42,6 +43,8 @@ import java.util.Set;
  */
 public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStrategy<Action> {
 
+    private static final Logger logger = Logger.getLogger(AnnotatedSettersDisassembleStrategy.class);
+
     @Override
     public void reset(Action action) {
         final Method[] methods = ReflectionUtils.getMethods(action.getClass(), new Filter<Method>() {
@@ -53,6 +56,7 @@ public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStra
         });
         if (methods.length > 0) {
             try {
+                logger.info("Resetting action through " + methods[0]);
                 methods[0].setAccessible(true);
                 methods[0].invoke(action);
             } catch (Throwable e) {
@@ -114,11 +118,6 @@ public class AnnotatedSettersDisassembleStrategy extends AbstractDisassembleStra
     @Override
     public void perform(Action action, PrintStream output) throws Exception {
         action.perform(output);
-    }
-
-    @Override
-    public String getName(Action action) {
-        return action.getName();
     }
 
     @Override

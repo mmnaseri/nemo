@@ -18,8 +18,10 @@ package com.agileapes.nemo.exec;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.impl.ActionDisassembler;
 import com.agileapes.nemo.action.impl.ActionWrapper;
+import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.event.*;
 import com.agileapes.nemo.option.Options;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -48,6 +50,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 public class Executor implements BeanPostProcessor, ApplicationContextAware {
 
+    private final static Logger logger = Logger.getLogger(Executor.class);
     private final Set<Action> actions = new CopyOnWriteArraySet<Action>();
     private Action defaultAction;
     private ApplicationContext context;
@@ -73,6 +76,7 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof ExecutorAware) {
+            logger.debug("Bean requesting access to the executor: " + beanName);
             ((ExecutorAware) bean).setExecutor(this);
         }
         return bean;
@@ -87,6 +91,8 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
      * This method will load the application context and expose the executor via {@link ExecutorAware}
      */
     private void prepareContext() {
+        logger.info("Preparing fallback application context");
+        logger.warn("This method is not recommended, as it is much slower. Use " + Bootstrap.class.getCanonicalName() + ".load() instead");
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/nemo.xml", "nemo/exec*.xml");
         context.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
             @Override
@@ -102,18 +108,37 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
      * This internal method will load actions from the Application context
      */
     private void prepareActions() {
-        String[] names = multicaster.publishEvent(new ActionNamesListedEvent(this, context.getBeanNamesForType(Action.class))).getNames();
+        logger.info("Preparing to load actions");
+        List<String> names = new ArrayList<String>();
+        Collections.addAll(names, context.getBeanNamesForType(Action.class));
+        logger.info("Discovered " + names.size() + " actions extending " + Action.class);
+        final String[] definitionNames = context.getBeanDefinitionNames();
+        for (String name : definitionNames) {
+            if (names.contains(name)) {
+                continue;
+            }
+            if (context.getType(name).isAnnotationPresent(Disassembler.class)) {
+                logger.info("Discovered bean " + name + " additionally through the @Disassembler annotation");
+                names.add(name);
+            }
+        }
+        names = multicaster.publishEvent(new ActionNamesListedEvent(this, names)).getNames();
         final ActionDisassembler disassembler = context.getBean(ActionDisassembler.class);
         for (String name : names) {
             if (context.isSingleton(name)) {
+                logger.debug("Wrapping action " + name + " ...");
                 final Action action = disassembler.getActionWrapper(context.getBean(name));
+                action.setBeanName(name);
                 if (action.isDefaultAction()) {
+                    logger.debug("Action " + name + " marked as default");
                     if (action.isInternal()) {
+                        logger.error("Action " + name + " cannot be both internal and default");
                         throw new IllegalStateException("Internal actions cannot be marked as the default action");
                     }
                     if (defaultAction == null) {
                         defaultAction = action;
                     } else {
+                        logger.error("Action " + defaultAction.getName() + " already marked as default");
                         throw new IllegalStateException("More than one default action specified");
                     }
                 }
@@ -122,6 +147,7 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
         }
         final Set<Action> actionSet = multicaster.publishEvent(new ActionsPreparedEvent(this, actions)).getActions();
         if (!actions.equals(actionSet)) {
+            logger.info("List of actions has been updated");
             actions.clear();
             actions.addAll(actionSet);
         }
@@ -151,15 +177,18 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
         if (execution != null) {
             return execution;
         }
+        logger.info("Execution is being configured");
         final Action target;
         String[] arguments;
         if (args.length == 0 || args[0].startsWith("-")) {
+            logger.info("Falling back to the default action");
             if (defaultAction == null) {
                 throw new IllegalStateException("No default action specified");
             }
             arguments = args;
             target = defaultAction;
         } else {
+            logger.info("Target action chosen: " + args[0]);
             target = getAction(args[0]);
             arguments = new String[args.length - 1];
             System.arraycopy(args, 1, arguments, 0, args.length - 1);
@@ -178,20 +207,26 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
      * @throws Exception
      */
     public void perform(Execution execution) throws Exception {
+        logger.info("Preparing action to be performed");
         final Action action = execution.getAction();
         final Options options = execution.getOptions();
+        logger.info("Resetting action options");
         ((ActionWrapper) action).reset();
         for (Map.Entry<String, String> entry : options.getOptions().entrySet()) {
+            logger.debug("Setting option " + entry.getKey() + " to " + entry.getValue());
             ((ActionWrapper) action).setOption(entry.getKey(), entry.getValue());
         }
         for (String flag : options.getFlags()) {
+            logger.debug("Enabling flag " + flag);
             ((ActionWrapper) action).setFlag(flag);
         }
         final List<String> indices = options.getIndices();
         for (int i = 0; i < indices.size(); i++) {
+            logger.debug("Setting option based on index number " + i);
             final String value = indices.get(i);
             ((ActionWrapper) action).setIndex(i, value);
         }
+        logger.info("Performing delegate action " + action.getName());
         multicaster.publishEvent(new BeforeActionPerformedEvent(this, action));
         action.perform(output);
         multicaster.publishEvent(new AfterActionPerformedEvent(this, action));
@@ -209,6 +244,7 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
      * @throws Exception
      */
     public void execute(String... args) throws Exception {
+        logger.info("Redirecting output to the standard output");
         execute(System.out, args);
     }
 
@@ -224,9 +260,11 @@ public class Executor implements BeanPostProcessor, ApplicationContextAware {
         if (context == null) {
             prepareContext();
         }
+        logger.info("Starting up ...");
         this.multicaster = new Multicaster(context);
         prepareActions();
         perform(getExecution());
         multicaster.publishEvent(new ApplicationShutdownEvent(this));
     }
+
 }
