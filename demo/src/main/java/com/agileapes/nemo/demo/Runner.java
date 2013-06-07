@@ -28,7 +28,6 @@ public class Runner {
             Bootstrap.load("/nemo/execution.xml", "usage").execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + e.getMessage());
-            e.printStackTrace();
             System.exit(1);
         }
     }
