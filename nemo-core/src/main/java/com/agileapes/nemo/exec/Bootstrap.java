@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/7, 3:03)
  */
+@SuppressWarnings("UnusedDeclaration")
 public class Bootstrap {
 
     public static final String NEMO_EXECUTOR = "nemoExecutor";
@@ -75,7 +76,7 @@ public class Bootstrap {
      * This method will generate a map from bean IDs to their corresponding
      * bean types as defined in nemo's main application context file.
      * @param content the contents of the application context file
-     * @return a map of baens
+     * @return a map of beans
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -162,7 +163,6 @@ public class Bootstrap {
         logger.info("Bootstrapping took " + stopWatch.getTotalTimeMillis() + "ms");
         final ConfigurableApplicationContext applicationContext = container.getApplicationContext();
         final Executor executor = applicationContext.getBean(Executor.class);
-        executor.setApplicationContext(applicationContext);
         executor.setDefaultActionName(defaultAction);
         return executor;
     }
