@@ -113,7 +113,9 @@ public class Bootstrap {
         //this is for the sake of proper order of initialization
         applicationContext.setParent(context);
         //this is so that getBean looks up beans from the static context, too
-//        applicationContext.getBeanFactory().setParentBeanFactory(context);
+        try {
+            applicationContext.getBeanFactory().setParentBeanFactory(context);
+        } catch (IllegalStateException ignored) {}
         final Map<String, Class<?>> map = getBeansDefinitions(getContextContent("/nemo/nemo.xml"));
         map.put(NEMO_EXECUTOR, Executor.class);
         for (Map.Entry<String, Class<?>> entry : map.entrySet()) {
