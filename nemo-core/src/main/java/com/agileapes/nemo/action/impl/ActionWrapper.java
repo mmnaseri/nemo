@@ -54,8 +54,9 @@ public class ActionWrapper<A> extends Action {
     }
 
     @Override
-    public void setDefaultAction(boolean defaultAction) {
+    public Action setDefaultAction(boolean defaultAction) {
         externallySetDefaultAction = defaultAction;
+        return this;
     }
 
     /**

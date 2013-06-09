@@ -15,7 +15,10 @@
 
 package com.agileapes.nemo.demo;
 
-import com.agileapes.nemo.exec.Bootstrap;
+import com.agileapes.nemo.action.impl.HelpAction;
+import com.agileapes.nemo.action.impl.NemoAction;
+import com.agileapes.nemo.action.impl.UsageAction;
+import com.agileapes.nemo.exec.ExecutorBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -28,7 +31,13 @@ public class Runner {
     public static void main(String[] args) throws Exception {
         Logger.getLogger("com.agileapes.nemo").setLevel(Level.OFF);
         try {
-            Bootstrap.load("/nemo/execution.xml", "usage").execute(args);
+            new ExecutorBuilder()
+                    .add("about", new NemoAction())
+                    .add(new ListAction())
+                    .add(new ReadAction())
+                    .add(new HelpAction())
+                    .addDefault(new UsageAction())
+                    .build().execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + e.getMessage());
             System.exit(1);

@@ -73,8 +73,9 @@ public abstract class Action implements BeanNameAware, Comparable<Action> {
      * This is to help identify default actions at runtime
      * @param defaultAction    {@code true} if this action should be marked as the default action
      */
-    public void setDefaultAction(boolean defaultAction) {
+    public Action setDefaultAction(boolean defaultAction) {
         this.defaultAction = defaultAction;
+        return this;
     }
 
     /**

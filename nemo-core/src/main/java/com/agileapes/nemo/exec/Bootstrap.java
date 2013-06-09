@@ -18,6 +18,7 @@ package com.agileapes.nemo.exec;
 import com.agileapes.nemo.event.Multicaster;
 import com.agileapes.nemo.event.NemoBootstrappedEvent;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
@@ -135,12 +136,12 @@ public class Bootstrap {
     }
 
     /**
-     * This is the same as {@link #load(org.springframework.context.ConfigurableApplicationContext)} but it instantiates
+     * This is the same as {@link #load(ConfigurableApplicationContext)} but it instantiates
      * its own application context, assuming that the configuration for the application is available under {@code /nemo/execution.xml},
      * otherwise it will raise a {@link FileNotFoundException}.
      * @return the executor instantiated by the bootstrapping mechanism
      * @throws Exception
-     * @see #load(org.springframework.context.ConfigurableApplicationContext)
+     * @see #load(ConfigurableApplicationContext)
      */
     public static Executor load() throws Exception {
         logger.info("Loading execution context from predesignated file :" + NEMO_EXECUTION_DEFAULT);
@@ -151,6 +152,21 @@ public class Bootstrap {
         return load(new FileSystemXmlApplicationContext(resource.toExternalForm()));
     }
 
+    /**
+     * This method statically reads bean class and identifiers from the specified XML
+     * configuration file.
+     * <strong>NB</strong> this method does not replace Spring's XML application context
+     * configuration loader, as it is meant to be just a fast approach for replacing the core
+     * of the functionality. In comparison, this method performs much faster, while it
+     * completely ignores constructor parameters, setter injection, and initialization
+     * ordering.
+     * If you are in need of those more advanced features of an application context you would
+     * be better off using your own application context and passing it via {@link #load(ConfigurableApplicationContext)}
+     * @param applicationContextFile    the path to local application context file (inside the classpath)
+     * @param defaultAction             the default action or {@code null} if none is meant
+     * @return the executor
+     * @throws Exception
+     */
     public static Executor load(String applicationContextFile, String defaultAction) throws Exception {
         logger.info("Loading bean definitions from: " + applicationContextFile);
         final StopWatch stopWatch = new StopWatch();
@@ -164,6 +180,32 @@ public class Bootstrap {
         final ConfigurableApplicationContext applicationContext = container.getApplicationContext();
         final Executor executor = applicationContext.getBean(Executor.class);
         executor.setDefaultActionName(defaultAction);
+        return executor;
+    }
+
+    /**
+     * This method is the same as {@link #load(org.springframework.context.ConfigurableApplicationContext)}
+     * while not providing as much initial functionality as that, since this method only
+     * accepts bean factories and not application context configurations.
+     * This is meant to be used in harmony with {@link ExecutorBuilder}
+     * @param parent    the parent bean factory containing actions
+     * @return the configured executor instance.
+     * @throws Exception
+     * @see ExecutorBuilder
+     */
+    public static Executor load(BeanFactory parent) throws Exception {
+        logger.info("Loading bean definitions from the provided bean factory");
+        final StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        final BeanDefinitionContainer container = new BeanDefinitionContainer();
+        container.addAll(getBeansDefinitions(getContextContent("/nemo/nemo.xml")));
+        container.add(NEMO_EXECUTOR, Executor.class);
+        stopWatch.stop();
+        logger.info("Bootstrapping took " + stopWatch.getTotalTimeMillis() + "ms");
+        final ConfigurableApplicationContext applicationContext = container.getApplicationContext();
+        applicationContext.getBeanFactory().setParentBeanFactory(parent);
+        final Executor executor = applicationContext.getBean(Executor.class);
+        executor.setApplicationContext(applicationContext);
         return executor;
     }
 
