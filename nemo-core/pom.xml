@@ -7,6 +7,34 @@
     <groupId>com.agileapes</groupId>
     <artifactId>nemo-core</artifactId>
     <version>1.0</version>
+    <packaging>jar</packaging>
+    <name>Nemo Core</name>
+    <description>A simple framework for building configurable command-line
+        applications</description>
+    <url>https://github.com/agileapes/nemo</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <distribution>repo</distribution>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/agileapes/nemo.git</url>
+        <connection>https://github.com/agileapes/nemo.git</connection>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Mohammad Milad Naseri</name>
+            <email>m.m.naseri@gmail.com</email>
+            <url>http://www.mmnaseri.com/</url>
+            <organization>AgileApes, Ltd.</organization>
+            <organizationUrl>http://www.agileapes.com</organizationUrl>
+        </developer>
+    </developers>
 
     <dependencies>
         <dependency>
