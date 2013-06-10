@@ -15,11 +15,12 @@
 
 package com.agileapes.nemo.value.impl;
 
+import com.agileapes.nemo.contract.Filter;
+import com.agileapes.nemo.contract.impl.AbstractThreadSafeRegistry;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderContext;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import static com.agileapes.nemo.util.CollectionDSL.with;
 
 /**
  * This is the default value reader context for the application
@@ -27,36 +28,41 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:10)
  */
-public class DefaultValueReaderContext implements ValueReaderContext {
+public class DefaultValueReaderContext extends AbstractThreadSafeRegistry<ValueReader> implements ValueReaderContext {
 
-    private final Set<ValueReader> valueReaders = new CopyOnWriteArraySet<ValueReader>();
+    private static class ValueReaderFilter implements Filter<ValueReader> {
 
-    @Override
-    public void add(ValueReader reader) {
-        valueReaders.add(reader);
+        private final Class targetType;
+
+        private ValueReaderFilter(Class targetType) {
+            this.targetType = targetType;
+        }
+
+        @Override
+        public boolean accepts(ValueReader item) {
+            return item.handles(targetType);
+        }
+
     }
 
-    private ValueReader getValueReader(Class<?> type) {
-        for (ValueReader valueReader : valueReaders) {
-            if (valueReader.handles(type)) {
-                return valueReader;
-            }
-        }
-        return null;
+    public DefaultValueReaderContext() {
+        namesAreTypeSpecific = true;
     }
 
     @Override
     public boolean handles(Class<?> type) {
-        return getValueReader(type) != null;
+        return !with(getMap().values())
+                .filter(new ValueReaderFilter(type)).list().isEmpty();
     }
 
     @Override
-    public <E> E read(String text, Class<E> type) {
-        final ValueReader reader = getValueReader(type);
-        if (reader == null) {
-            throw new IllegalArgumentException("No reader was found for type: " + type.getCanonicalName());
+    public <E> E read(String text, final Class<E> type) {
+        try {
+            return with(getMap().values())
+                    .filter(new ValueReaderFilter(type)).first().read(text, type);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("No value reader for: " + type.getCanonicalName());
         }
-        return reader.read(text, type);
     }
 
 }

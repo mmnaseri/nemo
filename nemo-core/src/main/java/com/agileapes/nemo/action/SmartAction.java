@@ -40,7 +40,7 @@ public class SmartAction<A> extends Action implements DisassemblerAware<A> {
         setOption(strategy.getOption(action, index), value);
     }
 
-    public Set<OptionDescriptor> getOptions() {
+    public Set<? extends OptionDescriptor> getOptions() {
         return strategy.getOptions(action);
     }
 

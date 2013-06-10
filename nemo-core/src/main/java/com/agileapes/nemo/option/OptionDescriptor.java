@@ -46,4 +46,11 @@ public class OptionDescriptor {
         return defaultValue;
     }
 
+    public boolean hasAlias() {
+        return alias != null;
+    }
+
+    public boolean hasIndex() {
+        return index != null;
+    }
 }

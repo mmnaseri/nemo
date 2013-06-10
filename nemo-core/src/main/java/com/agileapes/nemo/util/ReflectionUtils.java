@@ -18,6 +18,7 @@ package com.agileapes.nemo.util;
 import com.agileapes.nemo.contract.Filter;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
@@ -58,6 +59,29 @@ public class ReflectionUtils {
     }
 
     /**
+     * Works the same as {@link #getMethods(Class, com.agileapes.nemo.contract.Filter)}
+     * only for fields
+     * @param type      the type to be introspected
+     * @param filter    the filter deciding which fields should remain and which should go
+     * @return an array of selected fields
+     */
+    public static Field[] getFields(Class type, Filter<Field> filter) {
+        if (type == null || filter == null) {
+            throw new NullPointerException();
+        }
+        final List<Field> fields = new ArrayList<Field>();
+        while (type != null) {
+            for (Field field : type.getDeclaredFields()) {
+                if (filter.accepts(field)) {
+                    fields.add(field);
+                }
+            }
+            type = type.getSuperclass();
+        }
+        return fields.toArray(new Field[fields.size()]);
+    }
+
+    /**
      * @param setterName    the name of the setter method
      * @return the property name for this setter method
      */
@@ -73,6 +97,15 @@ public class ReflectionUtils {
      */
     public static String getSetterName(String propertyName) {
         return "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+    }
+
+    /**
+     * @param propertyName    the name of the property
+     * @param type            the type of the property
+     * @return the name of the getter method for this property
+     */
+    public static String getGetterName(String propertyName, Class type) {
+        return (type.equals(boolean.class) ? "is" : "get") + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
     }
 
     private static class Name {
@@ -162,5 +195,50 @@ public class ReflectionUtils {
         }
         return value;
     }
+
+    public static CollectionDSL.Wrapper<Method> withMethods(Class type) {
+        return CollectionDSL.with(getMethods(type, new Filter<Method>() {
+            @Override
+            public boolean accepts(Method item) {
+                return true;
+            }
+        }));
+    }
+
+    public static CollectionDSL.Wrapper<Field> withFields(Class type) {
+        return CollectionDSL.with(getFields(type, new Filter<Field>() {
+            @Override
+            public boolean accepts(Field item) {
+                return true;
+            }
+        }));
+    }
+
+    public static Method getGetter(Class type, Method setter) {
+        final List<Method> list = withMethods(type)
+                .filter(new GetterMethodFilter())
+                .filter(new MethodPropertyFilter(getPropertyName(setter.getName())))
+                .list();
+        if (list.isEmpty()) {
+            return null;
+        }
+        return list.get(0);
+    }
+
+    public static Field getField(Class type, final Method setter) {
+        final List<Field> fields = withFields(type)
+                .filter(new Filter<Field>() {
+                    @Override
+                    public boolean accepts(Field item) {
+                        return item.getName().equals(getPropertyName(setter.getName()))
+                                && item.getType().equals(setter.getParameterTypes()[0]);
+                    }
+                }).list();
+        if (fields.isEmpty()) {
+            return null;
+        }
+        return fields.get(0);
+    }
+
 
 }

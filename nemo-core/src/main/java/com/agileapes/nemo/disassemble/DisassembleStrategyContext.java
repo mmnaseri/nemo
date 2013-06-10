@@ -3,7 +3,7 @@ package com.agileapes.nemo.disassemble;
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.contract.Filter;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeRegistry;
-import com.agileapes.nemo.disassemble.impl.AnnotatedSettersDisassembleStrategy;
+import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.error.*;
 
 /**
@@ -12,13 +12,14 @@ import com.agileapes.nemo.error.*;
  */
 public class DisassembleStrategyContext extends AbstractThreadSafeRegistry<DisassembleStrategy> {
 
-    public static final Class<AnnotatedSettersDisassembleStrategy> DEFAULT_STRATEGY = AnnotatedSettersDisassembleStrategy.class;
+    public static final Class<AnnotatedFieldsDisassembleStrategy> DEFAULT_STRATEGY = AnnotatedFieldsDisassembleStrategy.class;
+
+    public DisassembleStrategyContext() {
+        namesAreTypeSpecific = true;
+    }
 
     @Override
     protected DisassembleStrategy postProcessBeforeRegister(String name, DisassembleStrategy item) throws RegistryException {
-        if (!item.getClass().getCanonicalName().equals(name)) {
-            throw new InvalidStrategyNameException(name, item.getClass().getCanonicalName());
-        }
         return item;
     }
 

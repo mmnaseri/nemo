@@ -3,6 +3,7 @@ package com.agileapes.nemo.contract.impl;
 import com.agileapes.nemo.contract.Filter;
 import com.agileapes.nemo.contract.Registry;
 import com.agileapes.nemo.error.DuplicateItemException;
+import com.agileapes.nemo.error.InvalidItemNameException;
 import com.agileapes.nemo.error.NoSuchItemException;
 import com.agileapes.nemo.error.RegistryException;
 
@@ -17,11 +18,15 @@ import java.util.Set;
 public abstract class AbstractRegistry<C> implements Registry<C> {
 
     protected abstract Map<String, C> getMap();
+    protected boolean namesAreTypeSpecific = false;
 
     @Override
     public void register(String name, C item) throws RegistryException {
         if (getMap().containsKey(name)) {
             throw new DuplicateItemException(name);
+        }
+        if (namesAreTypeSpecific && !item.getClass().getCanonicalName().equals(name)) {
+            throw new InvalidItemNameException(name, item.getClass().getCanonicalName());
         }
         C changed = postProcessBeforeRegister(name, item);
         if (changed == null) {

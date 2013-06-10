@@ -15,11 +15,8 @@
 
 package com.agileapes.nemo.value.impl;
 
+import com.agileapes.nemo.util.ClassUtils;
 import com.agileapes.nemo.value.ValueReader;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.ClassUtils;
 
 /**
  * This value reader will take as input the fully qualified name of a class within the classpath
@@ -28,17 +25,12 @@ import org.springframework.util.ClassUtils;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:08)
  */
-public class ClassValueReader implements ValueReader, ApplicationContextAware {
+public class ClassValueReader implements ValueReader {
 
     private ClassLoader classLoader = getClass().getClassLoader();
 
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        setClassLoader(applicationContext.getClassLoader());
     }
 
     @Override

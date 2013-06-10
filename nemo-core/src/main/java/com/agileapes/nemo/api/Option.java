@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * @since 1.0 (2013/6/4, 17:29)
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 public @interface Option {
 
     /**

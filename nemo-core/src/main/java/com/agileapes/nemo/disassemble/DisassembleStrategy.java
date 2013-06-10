@@ -19,7 +19,7 @@ public interface DisassembleStrategy<A> {
 
     OptionDescriptor getOption(A action, Integer index);
 
-    Set<OptionDescriptor> getOptions(A action);
+    Set<? extends OptionDescriptor> getOptions(A action);
 
     void setOption(A action, OptionDescriptor descriptor, String value);
 

@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * @since 1.0 (2013/6/5, 12:52)
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target({ElementType.FIELD, ElementType.TYPE})
 public @interface Help {
 
     /**
