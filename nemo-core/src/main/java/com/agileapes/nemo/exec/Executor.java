@@ -3,6 +3,7 @@ package com.agileapes.nemo.exec;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionRegistry;
 import com.agileapes.nemo.action.SmartAction;
+import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.disassemble.DisassembleStrategyContext;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.option.Options;
@@ -46,6 +47,9 @@ public class Executor {
 
     public void perform(Execution execution) throws Exception {
         final SmartAction action = (SmartAction) actionRegistry.get(execution.getTarget());
+        if (action.isInternal()) {
+            throw new IllegalAccessException("Internal action '" + execution.getTarget() + "' cannot be called from the command line");
+        }
         action.setOutput(output);
         action.reset();
         final Options options = execution.getOptions();
@@ -69,14 +73,27 @@ public class Executor {
         item.setValueReaderContext(valueReaderContext);
         strategyContext.register(AnnotatedFieldsDisassembleStrategy.class.getCanonicalName(), item);
         final ActionRegistry actionRegistry = new ActionRegistry(strategyContext);
-        actionRegistry.register("help", new Action() {
+        final Action action = new Action() {
+
+            @Option(alias = 'n')
+            private String name = "Mickey";
+
+            @Option(index = 0)
+            private String nickname;
+
             @Override
             public void execute() throws Exception {
-                getOutput().println("Hello world!");
+                getOutput().print("Hello, " + name);
+                if (nickname != null) {
+                    getOutput().print(", the " + nickname);
+                }
+                getOutput().println();
             }
-        });
+        };
+        action.setDefaultAction(true);
+        actionRegistry.register("hail", action);
         final Executor executor = new Executor(actionRegistry);
-        executor.execute("help", "--123");
+        executor.execute("hail", "Fix-it", "-n", "Milad");
     }
 
 }

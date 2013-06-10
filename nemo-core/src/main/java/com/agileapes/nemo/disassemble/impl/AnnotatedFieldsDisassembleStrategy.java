@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.agileapes.nemo.util.ReflectionUtils.getPropertyName;
 import static com.agileapes.nemo.util.ReflectionUtils.withFields;
 
 /**
@@ -33,7 +32,7 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
                     @Override
                     public void perform(Field field) {
                         field.setAccessible(true);
-                        final String propertyName = getPropertyName(field.getName());
+                        final String propertyName = field.getName();
                         final Option annotation = field.getAnnotation(Option.class);
                         try {
                             descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field));
