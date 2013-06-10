@@ -15,6 +15,8 @@
 
 package com.agileapes.nemo.util;
 
+import com.agileapes.nemo.contract.Filter;
+
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;

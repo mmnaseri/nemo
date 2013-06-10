@@ -19,7 +19,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Action Disassemblers -->
-    <bean class="com.agileapes.nemo.action.impl.ActionDisassembler"/>
+    <bean class="com.agileapes.nemo.action.impl.ActionDisassemblerContext"/>
     <bean class="com.agileapes.nemo.action.impl.AnnotatedSettersDisassembleStrategy"/>
 
     <!-- This is the value reader initialization section -->

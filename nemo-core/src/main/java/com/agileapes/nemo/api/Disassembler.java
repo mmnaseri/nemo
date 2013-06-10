@@ -15,7 +15,7 @@
 
 package com.agileapes.nemo.api;
 
-import com.agileapes.nemo.action.DisassembleStrategy;
+import com.agileapes.nemo.disassemble.DisassembleStrategy;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

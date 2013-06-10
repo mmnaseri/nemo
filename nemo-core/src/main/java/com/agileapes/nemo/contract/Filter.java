@@ -13,33 +13,20 @@
  * or substantial portions of the Software.
  */
 
-package com.agileapes.nemo.event;
-
-import com.agileapes.nemo.action.Action;
-import com.agileapes.nemo.exec.Executor;
-import org.springframework.context.ApplicationEvent;
+package com.agileapes.nemo.contract;
 
 /**
+ * This interface facilitates an abstract way of filtering out items from a collection
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
- * @since 1.0 (2013/6/7, 4:20)
+ * @since 1.0 (2013/6/4, 19:22)
  */
-public class AfterActionPerformedEvent extends ApplicationEvent {
+public interface Filter<E> {
 
-    private Executor executor;
-    private Action action;
-
-    public AfterActionPerformedEvent(Executor executor, Action action) {
-        super(executor);
-        this.executor = executor;
-        this.action = action;
-    }
-
-    public Executor getExecutor() {
-        return executor;
-    }
-
-    public Action getAction() {
-        return action;
-    }
+    /**
+     * @param item    the item to be evaluated
+     * @return {@code true} if the item has to be kept in the target collection
+     */
+    boolean accepts(E item);
 
 }
