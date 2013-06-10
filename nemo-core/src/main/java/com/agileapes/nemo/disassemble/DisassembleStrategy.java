@@ -1,6 +1,5 @@
 package com.agileapes.nemo.disassemble;
 
-import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.option.OptionDescriptor;
 
