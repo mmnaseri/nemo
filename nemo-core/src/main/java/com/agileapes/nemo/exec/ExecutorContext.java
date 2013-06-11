@@ -30,15 +30,17 @@ public class ExecutorContext extends AbstractThreadSafeRegistry<Object> {
     private final ActionRegistry actionRegistry;
     private final Executor executor;
 
-    public ExecutorContext() throws RegistryException {
+    public ExecutorContext() {
         valueReaderContext = new DefaultValueReaderContext();
         strategyContext = new DisassembleStrategyContext(valueReaderContext);
         actionRegistry = new ActionRegistry(strategyContext);
         executor = new Executor(actionRegistry);
-        registerBean(this, valueReaderContext);
-        registerBean(this, strategyContext);
-        registerBean(this, actionRegistry);
-        registerBean(this, executor);
+        try {
+            registerBean(this, valueReaderContext);
+            registerBean(this, strategyContext);
+            registerBean(this, actionRegistry);
+        } catch (RegistryException ignored) {
+        }
     }
 
     protected void addBean(String name, Object bean) throws RegistryException {

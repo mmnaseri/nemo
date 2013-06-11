@@ -13,7 +13,7 @@ public abstract class Action implements Executable {
     private boolean defaultAction;
     private boolean internal;
     private String name;
-    private PrintStream output;
+    protected PrintStream output;
 
     public boolean isDefaultAction() {
         return defaultAction;
