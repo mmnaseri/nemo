@@ -18,12 +18,10 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="about" class="com.agileapes.nemo.action.impl.NemoAction"/>
     <bean id="list" class="com.agileapes.nemo.demo.ListAction"/>
     <bean id="read" class="com.agileapes.nemo.demo.ReadAction"/>
-    <bean id="help" class="com.agileapes.nemo.action.impl.HelpAction"/>
-    <bean id="usage" class="com.agileapes.nemo.action.impl.UsageAction">
-        <property name="defaultAction" value="true"/>
-    </bean>
+    <bean id="executorContext" class="com.agileapes.nemo.exec.SpringExecutorContext"/>
+    <bean class="com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy"/>
+    <bean class="com.agileapes.nemo.value.impl.PrimitiveValueReader"/>
 
 </beans>

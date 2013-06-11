@@ -22,7 +22,6 @@ import com.agileapes.nemo.api.Option;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.PrintStream;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
@@ -34,21 +33,13 @@ import java.io.PrintStream;
 )
 public class ReadAction extends Action {
 
+    @Option(alias = 'f', required = true, index = 0)
     private File file;
+    @Option(alias = 'l')
     private int limit;
 
-    @Option(alias = 'f', required = true, index = 0)
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    @Option(alias = 'l')
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
-
     @Override
-    public void perform(PrintStream output) throws Exception {
+    public void execute() throws Exception {
         if (limit > 0) {
             output.println("Reading the first " + limit + " line(s) of " + file.getAbsolutePath());
         } else {

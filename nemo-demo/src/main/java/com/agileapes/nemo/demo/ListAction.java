@@ -20,7 +20,6 @@ import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 
 import java.io.File;
-import java.io.PrintStream;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
@@ -29,16 +28,12 @@ import java.io.PrintStream;
 @Help(value = "Lists the files in the current directory")
 public class ListAction extends Action {
 
-    private boolean numbers;
-
     @Option(alias = 'x')
     @Help(value = "Prints sequential file number prior to file path")
-    public void setNumbers(boolean numbers) {
-        this.numbers = numbers;
-    }
+    private boolean numbers;
 
     @Override
-    public void perform(PrintStream output) throws Exception {
+    public void execute() throws Exception {
         final File current = new File(".");
         final File[] files = current.listFiles();
         if (files == null) {

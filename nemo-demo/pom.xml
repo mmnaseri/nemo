@@ -42,8 +42,13 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>3.2.3.RELEASE</version>
+        </dependency>
+        <dependency>
             <groupId>com.agileapes.nemo</groupId>
-            <artifactId>nemo-core</artifactId>
+            <artifactId>nemo-spring</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
