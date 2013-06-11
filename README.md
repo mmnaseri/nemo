@@ -52,20 +52,15 @@ The above example can be achieved quite simply using nemo by first writing the a
 
     public class CloneAction extends Action {
         //lines omitted
+
         @Option
-        public void setBare(boolean bare) {
-            this.bare = bare;
-        }
+        private boolean bare;
 
         @Option(alias = 'l')
-        public void setLocal(File local) {
-            this.local = local;
-        }
+        private File local;
 
         @Option(required = true, index = 0)
-        public void setPath(URL path) {
-            this.path = path;
-        }
+        private URL path;
         //lines omitted
     }
 

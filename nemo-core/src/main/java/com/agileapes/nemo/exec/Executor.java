@@ -4,10 +4,8 @@ import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionRegistry;
 import com.agileapes.nemo.action.SmartAction;
 import com.agileapes.nemo.api.Option;
-import com.agileapes.nemo.disassemble.DisassembleStrategyContext;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.option.Options;
-import com.agileapes.nemo.value.impl.DefaultValueReaderContext;
 import com.agileapes.nemo.value.impl.PrimitiveValueReader;
 
 import java.io.PrintStream;
@@ -66,13 +64,6 @@ public class Executor {
     }
 
     public static void main(String[] args) throws Exception {
-        final DisassembleStrategyContext strategyContext = new DisassembleStrategyContext();
-        final AnnotatedFieldsDisassembleStrategy item = new AnnotatedFieldsDisassembleStrategy();
-        final DefaultValueReaderContext valueReaderContext = new DefaultValueReaderContext();
-        valueReaderContext.register(PrimitiveValueReader.class.getCanonicalName(), new PrimitiveValueReader());
-        item.setValueReaderContext(valueReaderContext);
-        strategyContext.register(AnnotatedFieldsDisassembleStrategy.class.getCanonicalName(), item);
-        final ActionRegistry actionRegistry = new ActionRegistry(strategyContext);
         final Action action = new Action() {
 
             @Option(alias = 'n')
@@ -91,9 +82,11 @@ public class Executor {
             }
         };
         action.setDefaultAction(true);
-        actionRegistry.register("hail", action);
-        final Executor executor = new Executor(actionRegistry);
-        executor.execute("hail", "Fix-it", "-n", "Milad");
+        final ExecutorContext context = new ExecutorContext();
+        context.addDisassembleStrategy(new AnnotatedFieldsDisassembleStrategy());
+        context.addValueReader(new PrimitiveValueReader());
+        context.addAction("hail", action);
+        context.execute();
     }
 
 }
