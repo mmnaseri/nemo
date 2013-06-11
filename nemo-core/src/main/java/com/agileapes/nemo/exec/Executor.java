@@ -5,6 +5,9 @@ import com.agileapes.nemo.action.ActionRegistry;
 import com.agileapes.nemo.action.SmartAction;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
+import com.agileapes.nemo.error.FatalExecutionException;
+import com.agileapes.nemo.error.NoSuchItemException;
+import com.agileapes.nemo.error.TargetNotFoundException;
 import com.agileapes.nemo.option.Options;
 import com.agileapes.nemo.value.impl.PrimitiveValueReader;
 
@@ -44,12 +47,21 @@ public class Executor {
     }
 
     public void perform(Execution execution) throws Exception {
-        final SmartAction action = (SmartAction) actionRegistry.get(execution.getTarget());
+        final SmartAction action;
+        try {
+            action = (SmartAction) actionRegistry.get(execution.getTarget());
+        } catch (NoSuchItemException e) {
+            throw new TargetNotFoundException(execution.getTarget());
+        }
         if (action.isInternal()) {
             throw new IllegalAccessException("Internal action '" + execution.getTarget() + "' cannot be called from the command line");
         }
         action.setOutput(output);
-        action.reset();
+        try {
+            action.reset();
+        } catch (Throwable e) {
+            throw new FatalExecutionException("Could not reset options for action: " + execution.getTarget());
+        }
         final Options options = execution.getOptions();
         for (Map.Entry<String, String> entry : options.getOptions().entrySet()) {
             action.setOption(entry.getKey(), entry.getValue());
@@ -86,7 +98,7 @@ public class Executor {
         context.addDisassembleStrategy(new AnnotatedFieldsDisassembleStrategy());
         context.addValueReader(new PrimitiveValueReader());
         context.addAction("hail", action);
-        context.execute();
+        context.execute(args);
     }
 
 }

@@ -1,6 +1,8 @@
 package com.agileapes.nemo.disassemble;
 
 import com.agileapes.nemo.contract.Executable;
+import com.agileapes.nemo.error.NoSuchOptionException;
+import com.agileapes.nemo.error.OptionDefinitionException;
 import com.agileapes.nemo.option.OptionDescriptor;
 
 import java.io.PrintStream;
@@ -12,17 +14,17 @@ import java.util.Set;
  */
 public interface DisassembleStrategy<A> {
 
-    OptionDescriptor getOption(A action, String option);
+    OptionDescriptor getOption(A action, String option) throws NoSuchOptionException, OptionDefinitionException;
 
-    OptionDescriptor getOption(A action, Character alias);
+    OptionDescriptor getOption(A action, Character alias) throws NoSuchOptionException, OptionDefinitionException;
 
-    OptionDescriptor getOption(A action, Integer index);
+    OptionDescriptor getOption(A action, Integer index) throws NoSuchOptionException, OptionDefinitionException;
 
-    Set<? extends OptionDescriptor> getOptions(A action);
+    Set<? extends OptionDescriptor> getOptions(A action) throws OptionDefinitionException;
 
-    void setOption(A action, OptionDescriptor descriptor, String value);
+    void setOption(A action, OptionDescriptor descriptor, String value) throws NoSuchOptionException, OptionDefinitionException;
 
-    void reset(A action);
+    void reset(A action) throws OptionDefinitionException;
 
     boolean isDefaultAction(A action);
 

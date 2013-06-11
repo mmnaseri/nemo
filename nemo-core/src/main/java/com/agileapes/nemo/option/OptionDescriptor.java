@@ -1,5 +1,7 @@
 package com.agileapes.nemo.option;
 
+import com.agileapes.nemo.error.OptionDefinitionException;
+
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 17:20)
@@ -13,7 +15,10 @@ public class OptionDescriptor {
     private final Class<?> type;
     private final Object defaultValue;
 
-    public OptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue) {
+    public OptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue) throws OptionDefinitionException {
+        if (name == null) {
+            throw new OptionDefinitionException("Option name cannot be null");
+        }
         this.name = name;
         this.alias = alias;
         this.index = index;
@@ -53,4 +58,5 @@ public class OptionDescriptor {
     public boolean hasIndex() {
         return index != null;
     }
+
 }

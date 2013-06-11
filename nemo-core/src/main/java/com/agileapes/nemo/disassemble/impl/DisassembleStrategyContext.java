@@ -1,9 +1,10 @@
-package com.agileapes.nemo.disassemble;
+package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.contract.Filter;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeRegistry;
-import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
+import com.agileapes.nemo.disassemble.DisassembleStrategy;
+import com.agileapes.nemo.disassemble.DisassemblerAware;
 import com.agileapes.nemo.error.ActionRefusedByStrategyException;
 import com.agileapes.nemo.error.NoStrategyAttributedException;
 import com.agileapes.nemo.error.NoSuchItemException;

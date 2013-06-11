@@ -5,6 +5,8 @@ import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.contract.Callback;
 import com.agileapes.nemo.contract.Executable;
+import com.agileapes.nemo.error.OptionDefinitionException;
+import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.FieldAnnotationFilter;
 import com.agileapes.nemo.util.NonStaticFieldFilter;
@@ -23,23 +25,28 @@ import static com.agileapes.nemo.util.ReflectionUtils.withFields;
 public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassembleStrategy<Action, AnnotatedFieldsDisassembleStrategy.FieldOptionDescriptor> {
 
     @Override
-    protected Set<FieldOptionDescriptor> describe(final Action action) {
+    protected Set<FieldOptionDescriptor> describe(final Action action) throws OptionDefinitionException {
         final HashSet<FieldOptionDescriptor> descriptors = new HashSet<FieldOptionDescriptor>();
-        withFields(action.getClass())
-                .filter(new FieldAnnotationFilter(Option.class))
-                .filter(new NonStaticFieldFilter())
-                .each(new Callback<Field>() {
-                    @Override
-                    public void perform(Field field) {
-                        field.setAccessible(true);
-                        final String propertyName = field.getName();
-                        final Option annotation = field.getAnnotation(Option.class);
-                        try {
-                            descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field));
-                        } catch (IllegalAccessException ignored) {
+        try {
+            withFields(action.getClass())
+                    .filter(new FieldAnnotationFilter(Option.class))
+                    .filter(new NonStaticFieldFilter())
+                    .each(new Callback<Field>() {
+                        @Override
+                        public void perform(Field field) {
+                            field.setAccessible(true);
+                            final String propertyName = field.getName();
+                            final Option annotation = field.getAnnotation(Option.class);
+                            try {
+                                descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field));
+                            } catch (Throwable e) {
+                                throw new WrappedError(e);
+                            }
                         }
-                    }
-                });
+                    });
+        } catch (WrappedError e) {
+            throw new OptionDefinitionException("Could not get a description for option", e.getWrappedError(Throwable.class));
+        }
         return descriptors;
     }
 
@@ -80,7 +87,7 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
 
         private final Field field;
 
-        public FieldOptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue, Field field) {
+        public FieldOptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue, Field field) throws OptionDefinitionException {
             super(name, alias, index, required, type, defaultValue);
             this.field = field;
         }

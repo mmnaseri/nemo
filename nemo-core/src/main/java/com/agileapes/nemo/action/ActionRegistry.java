@@ -1,11 +1,9 @@
 package com.agileapes.nemo.action;
 
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeRegistry;
-import com.agileapes.nemo.disassemble.DisassembleStrategyContext;
-import com.agileapes.nemo.error.FatalRegistryException;
-import com.agileapes.nemo.error.NoDefaultActionException;
-import com.agileapes.nemo.error.NoStrategyAttributedException;
-import com.agileapes.nemo.error.RegistryException;
+import com.agileapes.nemo.disassemble.DisassembleStrategy;
+import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
+import com.agileapes.nemo.error.*;
 
 import java.util.Collections;
 import java.util.Map;
@@ -30,25 +28,27 @@ public class ActionRegistry extends AbstractThreadSafeRegistry<Object> {
 
     @Override
     protected synchronized Object postProcessBeforeRegister(String name, Object item) throws RegistryException {
+        final DisassembleStrategy<Object> strategy;
         try {
-            final SmartAction<Object> action = new SmartAction<Object>(item, strategyContext.getStrategy(item));
-            action.setName(name);
-            actions.put(action.getName(), action);
-            if (action.isDefaultAction()) {
-                if (action.isInternal()) {
-                    throw new IllegalStateException("Actions cannot be both internal and marked as default: " + action.getName());
-                }
-                if (defaultAction != null) {
-                    throw new IllegalStateException("Action " + action.getName() + " cannot be marked as default, because action " + defaultAction.getName() + " has already been set as the default action");
-                }
-                defaultAction = action;
-            } else if (action.isInternal()) {
-                internalActions.add(action);
-            }
-            return action;
+            strategy = strategyContext.getStrategy(item);
         } catch (NoStrategyAttributedException e) {
             throw new FatalRegistryException("Could not find a strategy matching the requirements of action: " + name, e);
         }
+        final SmartAction<Object> action = new SmartAction<Object>(item, strategy);
+        action.setName(name);
+        actions.put(action.getName(), action);
+        if (action.isDefaultAction()) {
+            if (action.isInternal()) {
+                throw new ActionDefinitionException("Actions cannot be both internal and marked as default: " + action.getName());
+            }
+            if (defaultAction != null) {
+                throw new ActionDefinitionException("Action " + action.getName() + " cannot be marked as default, because action " + defaultAction.getName() + " has already been set as the default action");
+            }
+            defaultAction = action;
+        } else if (action.isInternal()) {
+            internalActions.add(action);
+        }
+        return action;
     }
 
     public Action getDefaultAction() throws NoDefaultActionException {

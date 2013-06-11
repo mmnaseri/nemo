@@ -2,6 +2,10 @@ package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.nemo.contract.Cache;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
+import com.agileapes.nemo.error.InvalidArgumentSyntaxException;
+import com.agileapes.nemo.error.NoSuchOptionException;
+import com.agileapes.nemo.error.OptionDefinitionException;
+import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.value.ValueReaderContext;
 import com.agileapes.nemo.value.ValueReaderContextAware;
@@ -21,7 +25,7 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
     private final Map<A, Set<D>> cache = new ConcurrentHashMap<A, Set<D>>();
     private ValueReaderContext valueReaderContext;
 
-    protected abstract Set<D> describe(A action);
+    protected abstract Set<D> describe(A action) throws OptionDefinitionException;
 
     protected abstract void setOption(A action, D target, Object converted);
 
@@ -43,12 +47,26 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
         if (has(key)) {
             return cache.get(key);
         }
-        Set<D> described = describe(key);
+        Set<D> described = null;
+        try {
+            described = describe(key);
+        } catch (OptionDefinitionException e) {
+            throw new WrappedError(e);
+        }
         if (!(described instanceof CopyOnWriteArrayList)) {
             described = new CopyOnWriteArraySet<D>(described);
         }
         write(key, described);
         return described;
+    }
+
+    public Set<D> readItem(A key) throws OptionDefinitionException {
+        try {
+            return read(key);
+        } catch (WrappedError e) {
+            final OptionDefinitionException error = e.getWrappedError(OptionDefinitionException.class);
+            throw error;
+        }
     }
 
     @Override
@@ -57,46 +75,46 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
     }
 
     @Override
-    public OptionDescriptor getOption(A action, String option) {
-        final Set<D> descriptors = read(action);
+    public OptionDescriptor getOption(A action, String option) throws NoSuchOptionException, OptionDefinitionException {
+        final Set<D> descriptors = readItem(action);
         for (OptionDescriptor descriptor : descriptors) {
             if (descriptor.getName().equals(option)) {
                 return descriptor;
             }
         }
-        throw new IllegalArgumentException("No such option: --" + option);
+        throw new NoSuchOptionException(option);
     }
 
     @Override
-    public OptionDescriptor getOption(A action, Character alias) {
-        final Set<D> descriptors = read(action);
+    public OptionDescriptor getOption(A action, Character alias) throws NoSuchOptionException, OptionDefinitionException {
+        final Set<D> descriptors = readItem(action);
         for (OptionDescriptor descriptor : descriptors) {
             if (descriptor.hasAlias() && descriptor.getAlias().equals(alias)) {
                 return descriptor;
             }
         }
-        throw new IllegalArgumentException("No such option: -" + alias);
+        throw new NoSuchOptionException(alias);
     }
 
     @Override
-    public OptionDescriptor getOption(A action, Integer index) {
-        final Set<D> descriptors = read(action);
+    public OptionDescriptor getOption(A action, Integer index) throws NoSuchOptionException, OptionDefinitionException {
+        final Set<D> descriptors = readItem(action);
         for (OptionDescriptor descriptor : descriptors) {
             if (descriptor.hasIndex() && descriptor.getIndex().equals(index)) {
                 return descriptor;
             }
         }
-        throw new IllegalArgumentException("No such option: %" + index);
+        throw new NoSuchOptionException(index);
     }
 
     @Override
-    public Set<D> getOptions(A action) {
-        return read(action);
+    public Set<D> getOptions(A action) throws OptionDefinitionException {
+        return readItem(action);
     }
 
     @Override
-    public void setOption(A action, OptionDescriptor descriptor, String value) {
-        final Set<D> descriptors = read(action);
+    public void setOption(A action, OptionDescriptor descriptor, String value) throws NoSuchOptionException, OptionDefinitionException {
+        final Set<D> descriptors = readItem(action);
         D target = null;
         for (D optionDescriptor : descriptors) {
             if (optionDescriptor.getName().equals(descriptor.getName())) {
@@ -105,15 +123,20 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
             }
         }
         if (target == null) {
-            return;
+            throw new NoSuchOptionException(descriptor.getName());
         }
-        final Object converted = valueReaderContext.read(value, target.getType());
+        final Object converted;
+        try {
+            converted = valueReaderContext.read(value, target.getType());
+        } catch (Throwable e) {
+            throw new InvalidArgumentSyntaxException(target.getName(), value);
+        }
         setOption(action, target, converted);
     }
 
     @Override
-    public void reset(A action) {
-        final Set<D> options = read(action);
+    public void reset(A action) throws OptionDefinitionException {
+        final Set<D> options = readItem(action);
         for (D option : options) {
             setOption(action, option, option.getDefaultValue());
         }

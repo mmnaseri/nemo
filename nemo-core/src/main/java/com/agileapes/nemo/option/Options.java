@@ -1,5 +1,7 @@
 package com.agileapes.nemo.option;
 
+import com.agileapes.nemo.error.InvalidArgumentSyntaxException;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,14 +41,14 @@ public class Options {
             this.arguments = arguments;
         }
 
-        public Options build() {
+        public Options build() throws InvalidArgumentSyntaxException {
             final Options options = new Options();
             int index = 0;
             for (int i = 0; i < arguments.length; i++) {
                 String argument = arguments[i];
                 String value;
                 if (argument.matches("--?")) {
-                    throw new IllegalArgumentException("Invalid argument: " + argument);
+                    throw new InvalidArgumentSyntaxException(argument);
                 }
                 if (argument.startsWith(OPTION_PREFIX)) {
                     if (i == arguments.length - 1 || arguments[i + 1].startsWith("-")) {

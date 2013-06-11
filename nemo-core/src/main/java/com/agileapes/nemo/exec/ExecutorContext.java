@@ -7,7 +7,7 @@ import com.agileapes.nemo.contract.Filter;
 import com.agileapes.nemo.contract.Registry;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeRegistry;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
-import com.agileapes.nemo.disassemble.DisassembleStrategyContext;
+import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderContext;

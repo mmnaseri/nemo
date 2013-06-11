@@ -2,6 +2,8 @@ package com.agileapes.nemo.action;
 
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.DisassemblerAware;
+import com.agileapes.nemo.error.NoSuchOptionException;
+import com.agileapes.nemo.error.OptionDefinitionException;
 import com.agileapes.nemo.error.RequiredOptionsMissingException;
 import com.agileapes.nemo.option.OptionDescriptor;
 
@@ -23,28 +25,28 @@ public class SmartAction<A> extends Action implements DisassemblerAware<A> {
         this.strategy = strategy;
     }
 
-    private void setOption(OptionDescriptor descriptor, String value) {
+    private void setOption(OptionDescriptor descriptor, String value) throws NoSuchOptionException, OptionDefinitionException {
         required.remove(descriptor);
         strategy.setOption(action, descriptor, value);
     }
 
-    public void setOption(String option, String value) {
+    public void setOption(String option, String value) throws NoSuchOptionException, OptionDefinitionException {
         setOption(strategy.getOption(action, option), value);
     }
 
-    public void setOption(Character alias, String value) {
+    public void setOption(Character alias, String value) throws NoSuchOptionException, OptionDefinitionException {
         setOption(strategy.getOption(action, alias), value);
     }
 
-    public void setOption(Integer index, String value) {
+    public void setOption(Integer index, String value) throws NoSuchOptionException, OptionDefinitionException {
         setOption(strategy.getOption(action, index), value);
     }
 
-    public Set<? extends OptionDescriptor> getOptions() {
+    public Set<? extends OptionDescriptor> getOptions() throws OptionDefinitionException {
         return strategy.getOptions(action);
     }
 
-    public void reset() {
+    public void reset() throws OptionDefinitionException {
         strategy.reset(action);
     }
 
