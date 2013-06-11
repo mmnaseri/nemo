@@ -10,8 +10,8 @@ import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.value.ValueReader;
+import com.agileapes.nemo.value.ValueReaderAware;
 import com.agileapes.nemo.value.ValueReaderContext;
-import com.agileapes.nemo.value.ValueReaderContextAware;
 import com.agileapes.nemo.value.impl.DefaultValueReaderContext;
 
 import java.io.PrintStream;
@@ -43,8 +43,8 @@ public class ExecutorContext extends AbstractThreadSafeRegistry<Object> {
             addBeanProcessor(new BeanProcessor() {
                 @Override
                 public Object processBean(String name, Object bean) throws Exception {
-                    if (bean instanceof ValueReaderContextAware) {
-                        ((ValueReaderContextAware) bean).setValueReaderContext(valueReaderContext);
+                    if (bean instanceof ValueReaderAware) {
+                        ((ValueReaderAware) bean).setValueReaderContext(valueReaderContext);
                     }
                     return bean;
                 }

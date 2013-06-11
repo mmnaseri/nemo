@@ -7,8 +7,8 @@ import com.agileapes.nemo.error.NoSuchOptionException;
 import com.agileapes.nemo.error.OptionDefinitionException;
 import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
-import com.agileapes.nemo.value.ValueReaderContext;
-import com.agileapes.nemo.value.ValueReaderContextAware;
+import com.agileapes.nemo.value.ValueReader;
+import com.agileapes.nemo.value.ValueReaderAware;
 
 import java.util.Map;
 import java.util.Set;
@@ -20,18 +20,18 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 18:27)
  */
-public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDescriptor> implements DisassembleStrategy<A>, Cache<A, Set<D>>, ValueReaderContextAware {
+public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDescriptor> implements DisassembleStrategy<A>, Cache<A, Set<D>>, ValueReaderAware {
 
     private final Map<A, Set<D>> cache = new ConcurrentHashMap<A, Set<D>>();
-    private ValueReaderContext valueReaderContext;
+    private ValueReader valueReader;
 
     protected abstract Set<D> describe(A action) throws OptionDefinitionException;
 
     protected abstract void setOption(A action, D target, Object converted);
 
     @Override
-    public void setValueReaderContext(ValueReaderContext valueReaderContext) {
-        this.valueReaderContext = valueReaderContext;
+    public void setValueReader(ValueReader valueReader) {
+        this.valueReader = valueReader;
     }
 
     @Override
@@ -127,7 +127,7 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
         }
         final Object converted;
         try {
-            converted = valueReaderContext.read(value, target.getType());
+            converted = valueReader.read(value, target.getType());
         } catch (Throwable e) {
             throw new InvalidArgumentSyntaxException(target.getName(), value);
         }
