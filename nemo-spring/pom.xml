@@ -7,12 +7,21 @@
     <groupId>com.agileapes.nemo</groupId>
     <artifactId>nemo-spring</artifactId>
     <version>1.0</version>
+    <name>Nemo + Spring</name>
+    <description>This module facilitates the integration of Nemo into the
+        Spring IoC container</description>
 
     <dependencies>
         <dependency>
             <groupId>com.agileapes.nemo</groupId>
             <artifactId>nemo-core</artifactId>
             <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>3.2.3.RELEASE</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
