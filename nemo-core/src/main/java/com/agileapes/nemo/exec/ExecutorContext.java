@@ -11,6 +11,7 @@ import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderContext;
+import com.agileapes.nemo.value.ValueReaderContextAware;
 import com.agileapes.nemo.value.impl.DefaultValueReaderContext;
 
 import java.io.PrintStream;
@@ -32,19 +33,30 @@ public class ExecutorContext extends AbstractThreadSafeRegistry<Object> {
 
     public ExecutorContext() {
         valueReaderContext = new DefaultValueReaderContext();
-        strategyContext = new DisassembleStrategyContext(valueReaderContext);
+        strategyContext = new DisassembleStrategyContext();
         actionRegistry = new ActionRegistry(strategyContext);
         executor = new Executor(actionRegistry);
         try {
             registerBean(this, valueReaderContext);
             registerBean(this, strategyContext);
             registerBean(this, actionRegistry);
+            addBeanProcessor(new BeanProcessor() {
+                @Override
+                public Object processBean(String name, Object bean) throws Exception {
+                    if (bean instanceof ValueReaderContextAware) {
+                        ((ValueReaderContextAware) bean).setValueReaderContext(valueReaderContext);
+                    }
+                    return bean;
+                }
+            });
         } catch (RegistryException ignored) {
         }
     }
 
     protected void addBean(String name, Object bean) throws RegistryException {
-        if (name.equals(bean.getClass().getCanonicalName())) {
+        if (name == null) {
+            name = bean.getClass().getName() + "#" + getMap().size();
+        } else if (bean.getClass().getCanonicalName().equals(name)) {
             name = name + "#" + getMap().size();
         }
         register(name, bean);

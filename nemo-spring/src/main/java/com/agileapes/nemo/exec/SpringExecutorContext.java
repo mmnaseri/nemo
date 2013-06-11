@@ -25,6 +25,7 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         final Set<Object> springContextItems = new HashSet<Object>();
+        final Set<Object> postProcessors = new HashSet<Object>();
         handleStrategies(beanFactory, springContextItems);
         handleValueReaders(beanFactory, springContextItems);
         handleActions(beanFactory, springContextItems);
@@ -35,7 +36,7 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
             beanFactory.registerSingleton(entry.getKey(), entry.getValue());
             if (entry.getValue() instanceof BeanProcessor) {
                 final BeanProcessor processor = (BeanProcessor) entry.getValue();
-                beanFactory.addBeanPostProcessor(new BeanPostProcessor() {
+                final BeanPostProcessor beanPostProcessor = new BeanPostProcessor() {
                     @Override
                     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
                         try {
@@ -50,11 +51,23 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
                     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
                         return bean;
                     }
-                });
+                };
+                postProcessors.add(beanPostProcessor);
+                beanFactory.addBeanPostProcessor(beanPostProcessor);
             }
-            beanFactory.applyBeanPostProcessorsAfterInitialization(entry.getValue(), entry.getKey());
-            beanFactory.applyBeanPostProcessorsBeforeInitialization(entry.getValue(), entry.getKey());
         }
+        final Map<String, BeanPostProcessor> postProcessorMap = beanFactory.getBeansOfType(BeanPostProcessor.class);
+        for (BeanPostProcessor processor : postProcessorMap.values()) {
+            if (postProcessors.contains(processor)) {
+                continue;
+            }
+            for (Map.Entry<String, Object> entry : getMap().entrySet()) {
+                Object object = processor.postProcessBeforeInitialization(entry.getValue(), entry.getKey());
+                object = processor.postProcessAfterInitialization(entry.getValue(), entry.getKey());
+                getMap().put(entry.getKey(), object);
+            }
+        }
+
     }
 
     private void handleStrategies(ConfigurableListableBeanFactory beanFactory, Set<Object> newItems) {

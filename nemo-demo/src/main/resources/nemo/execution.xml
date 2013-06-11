@@ -23,5 +23,7 @@
     <bean id="executorContext" class="com.agileapes.nemo.exec.SpringExecutorContext"/>
     <bean class="com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy"/>
     <bean class="com.agileapes.nemo.value.impl.PrimitiveValueReader"/>
+    <bean class="com.agileapes.nemo.demo.ValueUser"/>
+    <bean class="com.agileapes.nemo.demo.PostProcessor"/>
 
 </beans>

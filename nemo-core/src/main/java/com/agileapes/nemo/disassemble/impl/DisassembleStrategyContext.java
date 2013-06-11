@@ -9,8 +9,6 @@ import com.agileapes.nemo.error.ActionRefusedByStrategyException;
 import com.agileapes.nemo.error.NoStrategyAttributedException;
 import com.agileapes.nemo.error.NoSuchItemException;
 import com.agileapes.nemo.error.RegistryException;
-import com.agileapes.nemo.value.ValueReaderContext;
-import com.agileapes.nemo.value.ValueReaderContextAware;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
@@ -19,19 +17,9 @@ import com.agileapes.nemo.value.ValueReaderContextAware;
 public class DisassembleStrategyContext extends AbstractThreadSafeRegistry<DisassembleStrategy> {
 
     public static final Class<AnnotatedFieldsDisassembleStrategy> DEFAULT_STRATEGY = AnnotatedFieldsDisassembleStrategy.class;
-    private final ValueReaderContext valueReaderContext;
 
-    public DisassembleStrategyContext(ValueReaderContext valueReaderContext) {
-        this.valueReaderContext = valueReaderContext;
+    public DisassembleStrategyContext() {
         namesAreTypeSpecific = true;
-    }
-
-    @Override
-    protected DisassembleStrategy postProcessBeforeRegister(String name, DisassembleStrategy item) throws RegistryException {
-        if (item instanceof ValueReaderContextAware) {
-            ((ValueReaderContextAware) item).setValueReaderContext(valueReaderContext);
-        }
-        return item;
     }
 
     @SuppressWarnings("unchecked")

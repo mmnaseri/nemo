@@ -30,6 +30,7 @@ public class Runner {
         Logger.getLogger("com.agileapes.nemo").setLevel(Level.OFF);
         try {
             final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/execution.xml");
+            context.getBean(ValueUser.class).execute();
             final ExecutorContext executorContext = context.getBean(ExecutorContext.class);
             executorContext.execute("list", "-x");
         } catch (Throwable e) {
