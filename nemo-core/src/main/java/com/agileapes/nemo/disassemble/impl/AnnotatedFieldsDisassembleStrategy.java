@@ -19,6 +19,10 @@ import java.util.Set;
 import static com.agileapes.nemo.util.ReflectionUtils.withFields;
 
 /**
+ * This strategy relies on the {@link Option} annotation being present on the fields of the action class, and the action
+ * class being a descendant of {@link Action}. This strategy will then easily work through reflection to manage the task
+ * of discerning options
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 17:59)
  */

@@ -3,6 +3,9 @@ package com.agileapes.nemo.option;
 import com.agileapes.nemo.error.OptionDefinitionException;
 
 /**
+ * This class encapsulates the definition of an option as seen by the framework, through what the action
+ * developer has made available.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 17:20)
  */

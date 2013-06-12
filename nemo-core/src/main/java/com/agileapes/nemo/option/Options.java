@@ -7,6 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * This class will model the input arguments. Note that they are all the arguments presented by the user,
+ * and not necessary the correct options or values that the actions expect.
+ *
+ * To parse the input, you must use the internal {@link Builder} class.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 19:38)
  */

@@ -17,6 +17,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
+ * This is an abstract implementation of the {@link DisassembleStrategy} interface which is capable of caching the
+ * outcome of a disassembly once it has been carried out, so that the expensive process does not need to be performed
+ * each time for the same action
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 18:27)
  */
@@ -47,7 +51,7 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
         if (has(key)) {
             return cache.get(key);
         }
-        Set<D> described = null;
+        Set<D> described;
         try {
             described = describe(key);
         } catch (OptionDefinitionException e) {
@@ -64,8 +68,7 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
         try {
             return read(key);
         } catch (WrappedError e) {
-            final OptionDefinitionException error = e.getWrappedError(OptionDefinitionException.class);
-            throw error;
+            throw e.getWrappedError(OptionDefinitionException.class);
         }
     }
 
@@ -145,7 +148,7 @@ public abstract class AbstractCachingDisassembleStrategy<A, D extends OptionDesc
     @Override
     public boolean accepts(Object action) {
         try {
-            //noinspection unchecked
+            //noinspection unchecked,UnusedDeclaration
             final A cast = (A) action;
         } catch (ClassCastException e) {
             return false;

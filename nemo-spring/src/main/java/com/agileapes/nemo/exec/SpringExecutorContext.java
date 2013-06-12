@@ -3,6 +3,7 @@ package com.agileapes.nemo.exec;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.contract.BeanProcessor;
+import com.agileapes.nemo.contract.impl.SpringBeanProcessor;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.value.ValueReader;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,55 +24,51 @@ import java.util.Set;
  */
 public class SpringExecutorContext extends ExecutorContext implements BeanFactoryPostProcessor {
 
+    public static final String ACTION_PREFIX = "action:";
+
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         final Set<Object> springContextItems = new HashSet<Object>();
-        final Set<Object> postProcessors = new HashSet<Object>();
-        handleStrategies(beanFactory, springContextItems);
-        handleValueReaders(beanFactory, springContextItems);
-        handleActions(beanFactory, springContextItems);
+        springContextItems.addAll(handleStrategies(beanFactory));
+        springContextItems.addAll(handleValueReaders(beanFactory));
+        springContextItems.addAll(handleActions(beanFactory));
         for (Map.Entry<String, Object> entry : getMap().entrySet()) {
             if (springContextItems.contains(entry.getValue())) {
                 continue;
             }
             beanFactory.registerSingleton(entry.getKey(), entry.getValue());
-            if (entry.getValue() instanceof BeanProcessor) {
-                final BeanProcessor processor = (BeanProcessor) entry.getValue();
-                final BeanPostProcessor beanPostProcessor = new BeanPostProcessor() {
-                    @Override
-                    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-                        try {
-                            processor.processBean(beanName, bean);
-                        } catch (Exception e) {
-                            throw new FatalBeanException("Failed to process bean: " + beanName, e);
-                        }
-                        return bean;
-                    }
-
-                    @Override
-                    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-                        return bean;
-                    }
-                };
-                postProcessors.add(beanPostProcessor);
-                beanFactory.addBeanPostProcessor(beanPostProcessor);
-            }
         }
-        final Map<String, BeanPostProcessor> postProcessorMap = beanFactory.getBeansOfType(BeanPostProcessor.class);
+        final List<BeanProcessor> processors = getBeanProcessors();
+        final Set<BeanPostProcessor> newProcessors = new HashSet<BeanPostProcessor>();
+        for (BeanProcessor processor : processors) {
+            final SpringBeanProcessor beanPostProcessor = new SpringBeanProcessor(processor);
+            newProcessors.add(beanPostProcessor);
+            beanFactory.addBeanPostProcessor(beanPostProcessor);
+        }
+        final Map<String, BeanPostProcessor> postProcessorMap = beanFactory.getBeansOfType(BeanPostProcessor.class, false, true);
         for (BeanPostProcessor processor : postProcessorMap.values()) {
-            if (postProcessors.contains(processor)) {
+            if (newProcessors.contains(processor)) {
                 continue;
             }
             for (Map.Entry<String, Object> entry : getMap().entrySet()) {
-                Object object = processor.postProcessBeforeInitialization(entry.getValue(), entry.getKey());
-                object = processor.postProcessAfterInitialization(entry.getValue(), entry.getKey());
-                getMap().put(entry.getKey(), object);
+                if (springContextItems.contains(entry.getValue())) {
+                    continue;
+                }
+                Object first = processor.postProcessBeforeInitialization(entry.getValue(), entry.getKey());
+                if (first == null) {
+                    first = entry.getValue();
+                }
+                Object second = processor.postProcessAfterInitialization(first, entry.getKey());
+                if (second == null) {
+                    second = first;
+                }
+                getMap().put(entry.getKey(), second);
             }
         }
-
     }
 
-    private void handleStrategies(ConfigurableListableBeanFactory beanFactory, Set<Object> newItems) {
+    private Set<Object> handleStrategies(ConfigurableListableBeanFactory beanFactory) {
+        final Set<Object> newItems = new HashSet<Object>();
         final String[] names = beanFactory.getBeanNamesForType(DisassembleStrategy.class, false, true);
         for (String name : names) {
             try {
@@ -81,9 +79,11 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
                 throw new FatalBeanException("Failed to register strategy", e);
             }
         }
+        return newItems;
     }
 
-    private void handleValueReaders(ConfigurableListableBeanFactory beanFactory, Set<Object> newItems) {
+    private Set<Object> handleValueReaders(ConfigurableListableBeanFactory beanFactory) {
+        final Set<Object> newItems = new HashSet<Object>();
         final String[] names = beanFactory.getBeanNamesForType(ValueReader.class, false, true);
         for (String name : names) {
             try {
@@ -94,14 +94,19 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
                 throw new FatalBeanException("Failed to register value reader", e);
             }
         }
+        return newItems;
     }
 
-    private void handleActions(ConfigurableListableBeanFactory beanFactory, Set<Object> newItems) {
+    private Set<Object> handleActions(ConfigurableListableBeanFactory beanFactory) {
+        final Set<Object> newItems = new HashSet<Object>();
         final String[] names = beanFactory.getBeanNamesForType(Action.class, false, true);
         for (String name : names) {
             try {
                 final Action action = beanFactory.getBean(name, Action.class);
                 newItems.add(action);
+                if (name.startsWith(ACTION_PREFIX)) {
+                    name = name.substring(ACTION_PREFIX.length());
+                }
                 addAction(name, action);
             } catch (RegistryException e) {
                 throw new FatalBeanException("Failed to register value reader", e);
@@ -119,6 +124,7 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
                 throw new FatalBeanException("Failed to register value reader", e);
             }
         }
+        return newItems;
     }
 
 }

@@ -15,7 +15,7 @@
 
 package com.agileapes.nemo.value;
 
-import com.agileapes.nemo.contract.Registry;
+import com.agileapes.nemo.contract.Context;
 
 /**
  * The reader context is designed as a repository of value readers that can handle all
@@ -25,5 +25,5 @@ import com.agileapes.nemo.contract.Registry;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 18:59)
  */
-public interface ValueReaderContext extends ValueReader, Registry<ValueReader> {
+public interface ValueReaderContext extends ValueReader, Context<ValueReader> {
 }

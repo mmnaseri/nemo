@@ -18,11 +18,10 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="list" class="com.agileapes.nemo.demo.ListAction"/>
-    <bean id="read" class="com.agileapes.nemo.demo.ReadAction"/>
-    <bean id="executorContext" class="com.agileapes.nemo.exec.SpringExecutorContext"/>
-    <bean class="com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy"/>
-    <bean class="com.agileapes.nemo.value.impl.PrimitiveValueReader"/>
+    <import resource="nemo.xml"/>
+
+    <bean name="action:list" class="com.agileapes.nemo.demo.ListAction"/>
+    <bean name="action:read" class="com.agileapes.nemo.demo.ReadAction"/>
     <bean class="com.agileapes.nemo.demo.ValueUser"/>
     <bean class="com.agileapes.nemo.demo.PostProcessor"/>
 

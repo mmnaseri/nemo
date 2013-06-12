@@ -16,7 +16,7 @@
 package com.agileapes.nemo.value.impl;
 
 import com.agileapes.nemo.contract.Filter;
-import com.agileapes.nemo.contract.impl.AbstractThreadSafeRegistry;
+import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderContext;
 
@@ -28,7 +28,7 @@ import static com.agileapes.nemo.util.CollectionDSL.with;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:10)
  */
-public class DefaultValueReaderContext extends AbstractThreadSafeRegistry<ValueReader> implements ValueReaderContext {
+public class DefaultValueReaderContext extends AbstractThreadSafeContext<ValueReader> implements ValueReaderContext {
 
     private static class ValueReaderFilter implements Filter<ValueReader> {
 

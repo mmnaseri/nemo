@@ -1,0 +1,102 @@
+package com.agileapes.nemo.action;
+
+import com.agileapes.nemo.contract.impl.AbstractBeanProcessor;
+import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
+import com.agileapes.nemo.disassemble.DisassembleStrategy;
+import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
+import com.agileapes.nemo.error.*;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+/**
+ * The action registry is the entity in charge of holding actions in place. This registry acts as the central information
+ * gathering entity which is the reference entity for all the actions in the system. If there is an action that can be
+ * referenced from the execution context it must be registered here and vice versa.
+ *
+ * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
+ * @since 1.0 (2013/6/10, 16:44)
+ */
+public class ActionContext extends AbstractThreadSafeContext<Object> {
+
+    private final Set<Action> internalActions = new CopyOnWriteArraySet<Action>();
+    private final Map<String, Action> actions = new ConcurrentHashMap<String, Action>();
+    private Action defaultAction = null;
+
+    /**
+     * This constructor will instantiate the registry, taking in the unique strategy context bean for the whole
+     * application. This strategy context will later help determine which strategy should be used for disassembling
+     * the actions registered with the system.
+     * @param strategyContext    the strategy context
+     */
+    public ActionContext(final DisassembleStrategyContext strategyContext) {
+        addBeanProcessor(new AbstractBeanProcessor(Integer.MIN_VALUE) {
+            @Override
+            public Object postProcessBeforeRegistration(Object bean, String beanName) throws RegistryException {
+                final DisassembleStrategy<Object> strategy;
+                try {
+                    strategy = strategyContext.getStrategy(bean);
+                } catch (NoStrategyAttributedException e) {
+                    throw new FatalRegistryException("Could not find a strategy matching the requirements of action: " + beanName, e);
+                }
+                final SmartAction<Object> action = new SmartAction<Object>(bean, strategy);
+                action.setName(beanName);
+                actions.put(action.getName(), action);
+                if (action.isDefaultAction()) {
+                    if (action.isInternal()) {
+                        throw new ActionDefinitionException("Actions cannot be both internal and marked as default: " + action.getName());
+                    }
+                    if (defaultAction != null) {
+                        throw new ActionDefinitionException("Action " + action.getName() + " cannot be marked as default, because action " + defaultAction.getName() + " has already been set as the default action");
+                    }
+                    defaultAction = action;
+                } else if (action.isInternal()) {
+                    internalActions.add(action);
+                }
+                return action;
+            }
+        });
+    }
+
+    /**
+     * This method will return the default action for the context, determined via {@link DisassembleStrategy#isDefaultAction(Object)}
+     * or throw an exception
+     * @return the default action
+     * @throws NoDefaultActionException if no default action has been specified throughout the system
+     */
+    public Action getDefaultAction() throws NoDefaultActionException {
+        if (defaultAction == null) {
+            throw new NoDefaultActionException();
+        }
+        return defaultAction;
+    }
+
+    /**
+     * @return will return a set of all the actions marked as internal
+     */
+    public Set<Action> getInternalActions() {
+        return Collections.unmodifiableSet(internalActions);
+    }
+
+    /**
+     * Will return a map of action target names to wrapped actions. This is handy when you want to access all the
+     * actions.
+     * <strong>NB</strong> Actions can be cast to {@link SmartAction} to access the strategy they offer
+     * @return map of actions
+     */
+    public Map<String, Action> getActions() {
+        return Collections.unmodifiableMap(actions);
+    }
+
+    /**
+     * @return a set of all the names through which actions can be invoked. This set includes the internal actions,
+     * which <em>cannot</em> be accessed externally.
+     */
+    public Set<String> getTargets() {
+        return Collections.unmodifiableSet(actions.keySet());
+    }
+
+}

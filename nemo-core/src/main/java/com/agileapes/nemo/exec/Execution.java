@@ -1,11 +1,13 @@
 package com.agileapes.nemo.exec;
 
-import com.agileapes.nemo.action.ActionRegistry;
+import com.agileapes.nemo.action.ActionContext;
 import com.agileapes.nemo.error.InvalidArgumentSyntaxException;
 import com.agileapes.nemo.error.NoDefaultActionException;
 import com.agileapes.nemo.option.Options;
 
 /**
+ * The execution abstracts the meaning of an action being invoked from the command line.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 21:45)
  */
@@ -15,7 +17,7 @@ public class Execution {
     private final String[] arguments;
     private final Options options;
 
-    Execution(ActionRegistry actionRegistry, String... arguments) throws NoDefaultActionException, InvalidArgumentSyntaxException {
+    Execution(ActionContext actionRegistry, String... arguments) throws NoDefaultActionException, InvalidArgumentSyntaxException {
         if (arguments.length == 0 || arguments[0].startsWith("-")) {
             this.target = actionRegistry.getDefaultAction().getName();
             this.arguments = arguments;

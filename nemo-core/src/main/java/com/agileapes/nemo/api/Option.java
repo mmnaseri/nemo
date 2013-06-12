@@ -21,9 +21,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation will mark setter methods that are bound to outside properties.
- * Property names are extracted from the setters' names. Aliases can be added through
- * {@link #alias()}
+ * This annotation will mark properties that are bound to externally configurable options.
+ * Aliases can be added through {@link #alias()}
  *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 17:29)

@@ -2,7 +2,7 @@ package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.contract.Filter;
-import com.agileapes.nemo.contract.impl.AbstractThreadSafeRegistry;
+import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.DisassemblerAware;
 import com.agileapes.nemo.error.ActionRefusedByStrategyException;
@@ -11,10 +11,13 @@ import com.agileapes.nemo.error.NoSuchItemException;
 import com.agileapes.nemo.error.RegistryException;
 
 /**
+ * This is a context aware of all the strategies throughout the application. All strategies not registered with this context
+ * will be ignored by the executor.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 17:17)
  */
-public class DisassembleStrategyContext extends AbstractThreadSafeRegistry<DisassembleStrategy> {
+public class DisassembleStrategyContext extends AbstractThreadSafeContext<DisassembleStrategy> {
 
     public static final Class<AnnotatedFieldsDisassembleStrategy> DEFAULT_STRATEGY = AnnotatedFieldsDisassembleStrategy.class;
 

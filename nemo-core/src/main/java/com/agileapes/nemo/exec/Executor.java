@@ -1,30 +1,33 @@
 package com.agileapes.nemo.exec;
 
 import com.agileapes.nemo.action.Action;
-import com.agileapes.nemo.action.ActionRegistry;
+import com.agileapes.nemo.action.ActionContext;
 import com.agileapes.nemo.action.SmartAction;
 import com.agileapes.nemo.api.Option;
-import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.error.FatalExecutionException;
 import com.agileapes.nemo.error.NoSuchItemException;
 import com.agileapes.nemo.error.TargetNotFoundException;
 import com.agileapes.nemo.option.Options;
-import com.agileapes.nemo.value.impl.PrimitiveValueReader;
 
 import java.io.PrintStream;
 import java.util.Map;
 
 /**
+ * The executor will carry out the gluing piece of work by handling input arguments and handing the task
+ * over to the responsible authority classes whenever required.
+ *
+ * The currently in-progress execution can be determined via {@link #getExecution()}.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 19:50)
  */
 public class Executor {
 
-    private final ActionRegistry actionRegistry;
+    private final ActionContext actionRegistry;
     private Execution execution;
     private PrintStream output;
 
-    public Executor(ActionRegistry actionRegistry) {
+    Executor(ActionContext actionRegistry) {
         this.actionRegistry = actionRegistry;
     }
 
@@ -95,10 +98,8 @@ public class Executor {
         };
         action.setDefaultAction(true);
         final ExecutorContext context = new ExecutorContext();
-        context.addDisassembleStrategy(new AnnotatedFieldsDisassembleStrategy());
-        context.addValueReader(new PrimitiveValueReader());
         context.addAction("hail", action);
-        context.execute(args);
+        context.execute("hail", "Milad");
     }
 
 }

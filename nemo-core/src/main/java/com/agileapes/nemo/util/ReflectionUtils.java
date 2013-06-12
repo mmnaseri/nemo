@@ -31,9 +31,7 @@ import java.util.List;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/4, 19:21)
  */
-public class ReflectionUtils {
-
-    private ReflectionUtils() {}
+public abstract class ReflectionUtils {
 
     /**
      * This method will return all methods matching the given filter. The methods will be
@@ -89,23 +87,6 @@ public class ReflectionUtils {
         String name = setterName.substring(3);
         name = name.substring(0, 1).toLowerCase() + (name.length() > 1 ? name.substring(1) : "");
         return name;
-    }
-
-    /**
-     * @param propertyName    the name of the property
-     * @return the name of the setter method for this property
-     */
-    public static String getSetterName(String propertyName) {
-        return "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
-    }
-
-    /**
-     * @param propertyName    the name of the property
-     * @param type            the type of the property
-     * @return the name of the getter method for this property
-     */
-    public static String getGetterName(String propertyName, Class type) {
-        return (type.equals(boolean.class) ? "is" : "get") + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
     }
 
     private static class Name {
@@ -196,15 +177,6 @@ public class ReflectionUtils {
         return value;
     }
 
-    public static CollectionDSL.Wrapper<Method> withMethods(Class type) {
-        return CollectionDSL.with(getMethods(type, new Filter<Method>() {
-            @Override
-            public boolean accepts(Method item) {
-                return true;
-            }
-        }));
-    }
-
     public static CollectionDSL.Wrapper<Field> withFields(Class type) {
         return CollectionDSL.with(getFields(type, new Filter<Field>() {
             @Override
@@ -213,32 +185,5 @@ public class ReflectionUtils {
             }
         }));
     }
-
-    public static Method getGetter(Class type, Method setter) {
-        final List<Method> list = withMethods(type)
-                .filter(new GetterMethodFilter())
-                .filter(new MethodPropertyFilter(getPropertyName(setter.getName())))
-                .list();
-        if (list.isEmpty()) {
-            return null;
-        }
-        return list.get(0);
-    }
-
-    public static Field getField(Class type, final Method setter) {
-        final List<Field> fields = withFields(type)
-                .filter(new Filter<Field>() {
-                    @Override
-                    public boolean accepts(Field item) {
-                        return item.getName().equals(getPropertyName(setter.getName()))
-                                && item.getType().equals(setter.getParameterTypes()[0]);
-                    }
-                }).list();
-        if (fields.isEmpty()) {
-            return null;
-        }
-        return fields.get(0);
-    }
-
 
 }

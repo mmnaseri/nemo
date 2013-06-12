@@ -4,12 +4,13 @@ import com.agileapes.nemo.contract.Callback;
 import com.agileapes.nemo.contract.Filter;
 import com.agileapes.nemo.contract.Mapper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
+ * This class will enable you to write easily usable, and fluent workings for any given collection.
+ *
+ * @see #with(java.util.Collection)
+ * @see #with(Object[])
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 18:50)
  */
@@ -19,7 +20,7 @@ public abstract class CollectionDSL {
 
         private final List<I> items;
 
-        public Wrapper(List<I> items) {
+        private Wrapper(List<I> items) {
             this.items = items;
         }
 
@@ -72,6 +73,18 @@ public abstract class CollectionDSL {
 
     public static <I> Wrapper<I> with(Collection<I> collection) {
         return new Wrapper<I>(new ArrayList<I>(collection));
+    }
+
+    public static <I extends Comparable<I>> List<I> sorted(Collection<I> input) {
+        final ArrayList<I> list = new ArrayList<I>(input);
+        Collections.sort(list);
+        return list;
+    }
+
+    public static <I> List<I> sorted(Collection<I> input, Comparator<I> comparator) {
+        final ArrayList<I> list = new ArrayList<I>(input);
+        Collections.sort(list, comparator);
+        return list;
     }
 
 }
