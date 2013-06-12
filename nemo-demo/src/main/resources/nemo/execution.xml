@@ -22,7 +22,5 @@
 
     <bean name="action:list" class="com.agileapes.nemo.demo.ListAction"/>
     <bean name="action:read" class="com.agileapes.nemo.demo.ReadAction"/>
-    <bean class="com.agileapes.nemo.demo.ValueUser"/>
-    <bean class="com.agileapes.nemo.demo.PostProcessor"/>
 
 </beans>

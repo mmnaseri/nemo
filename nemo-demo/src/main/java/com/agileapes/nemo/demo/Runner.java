@@ -29,13 +29,9 @@ public class Runner {
     public static void main(String[] args) throws Exception {
         Logger.getLogger("com.agileapes.nemo").setLevel(Level.OFF);
         try {
-            final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("nemo/execution.xml");
-            context.getBean(ValueUser.class).execute();
-            final ExecutorContext executorContext = context.getBean(ExecutorContext.class);
-            executorContext.execute("list", "-x");
+            new ClassPathXmlApplicationContext("nemo/execution.xml").getBean(ExecutorContext.class).execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + e.getMessage());
-            e.printStackTrace();
             System.exit(1);
         }
     }
