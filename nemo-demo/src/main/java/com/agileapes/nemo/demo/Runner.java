@@ -17,8 +17,6 @@ package com.agileapes.nemo.demo;
 
 import com.agileapes.nemo.exec.ExecutorContext;
 import com.agileapes.nemo.util.ExceptionMessage;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -28,7 +26,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class Runner {
 
     public static void main(String[] args) throws Exception {
-//        Logger.getLogger("com.agileapes.nemo").setLevel(Level.OFF);
         try {
             new ClassPathXmlApplicationContext("nemo/execution.xml").getBean(ExecutorContext.class).execute(args);
         } catch (Throwable e) {

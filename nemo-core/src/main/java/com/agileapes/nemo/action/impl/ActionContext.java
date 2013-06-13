@@ -1,7 +1,6 @@
 package com.agileapes.nemo.action.impl;
 
 import com.agileapes.nemo.action.Action;
-import com.agileapes.nemo.action.ActionContextAware;
 import com.agileapes.nemo.contract.impl.AbstractBeanProcessor;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
@@ -44,7 +43,7 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
                 log.info("Registering action <" + beanName + "> of type " + bean.getClass());
                 final DisassembleStrategy<Object> strategy;
                 try {
-                    log.info("Attempting to discern action strategy");
+                    log.info("Attempting to discern action strategy for action " + beanName);
                     strategy = strategyContext.getStrategy(bean);
                 } catch (NoStrategyAttributedException e) {
                     throw new FatalRegistryException("Could not find a strategy matching the requirements of action: " + beanName, e);

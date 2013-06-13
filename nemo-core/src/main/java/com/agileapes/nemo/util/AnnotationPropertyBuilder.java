@@ -4,7 +4,6 @@ import com.agileapes.nemo.contract.Callback;
 import com.agileapes.nemo.contract.Filter;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;

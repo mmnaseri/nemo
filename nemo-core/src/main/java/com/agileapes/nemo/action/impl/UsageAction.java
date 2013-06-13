@@ -82,14 +82,14 @@ public class UsageAction extends Action implements ActionContextAware {
                 }
             };
             output.print("%APPLICATION% " + target + " ");
-            with(descriptors)
+            final CollectionDSL.Wrapper<OptionDescriptor> flags = with(descriptors)
                     .filter(new Filter<OptionDescriptor>() {
                         @Override
                         public boolean accepts(OptionDescriptor item) {
                             return item.isFlag();
                         }
-                    })
-                    .each(optionWriter);
+                    });
+            flags.each(optionWriter);
             with(descriptors)
                     .filter(new Filter<OptionDescriptor>() {
                         @Override
@@ -98,14 +98,25 @@ public class UsageAction extends Action implements ActionContextAware {
                         }
                     })
                     .each(optionWriter);
-            with(descriptors)
+            final CollectionDSL.Wrapper<OptionDescriptor> indexed = with(descriptors)
                     .filter(new Filter<OptionDescriptor>() {
                         @Override
                         public boolean accepts(OptionDescriptor item) {
                             return item.getIndex() != null;
                         }
-                    })
-                    .each(optionWriter);
+                    });
+            indexed.each(optionWriter).count();
+            output.println();
+            if (flags.count() > 0) {
+                output.println("You can set values for flags by giving them values, e.g. --" + flags.first().getName() + " false");
+            }
+            if (indexed.count() > 0) {
+                output.println("Options that are addressed sequentially (e.g. <" + indexed.first().getName() + ">) can be addressed " +
+                        "directly as well, e.g. --" + indexed.last().getName() + " <value>");
+                output.println("This is useful if you want to, for instance, set the value of the second option while " +
+                        "leaving the first unset.");
+            }
+
         }
     }
 

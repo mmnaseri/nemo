@@ -34,10 +34,11 @@ public abstract class CollectionDSL {
             return new Wrapper<I>(list);
         }
 
-        public void each(Callback<I> callback) {
+        public Wrapper<I> each(Callback<I> callback) {
             for (I item : items) {
                 callback.perform(item);
             }
+            return this;
         }
 
         public <O> Wrapper<O> map(Mapper<I, O> mapper) {
@@ -63,6 +64,10 @@ public abstract class CollectionDSL {
 
         public I last() {
             return items.get(items.size() - 1);
+        }
+
+        public int count() {
+            return items.size();
         }
 
     }
