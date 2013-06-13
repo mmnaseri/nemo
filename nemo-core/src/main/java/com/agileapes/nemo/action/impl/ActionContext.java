@@ -1,5 +1,8 @@
-package com.agileapes.nemo.action;
+package com.agileapes.nemo.action.impl;
 
+import com.agileapes.nemo.action.Action;
+import com.agileapes.nemo.action.ActionContextAware;
+import com.agileapes.nemo.contract.BeanProcessor;
 import com.agileapes.nemo.contract.impl.AbstractBeanProcessor;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
@@ -57,6 +60,21 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
                     internalActions.add(action);
                 }
                 return action;
+            }
+        });
+        addBeanProcessor(new AbstractBeanProcessor() {
+            @Override
+            public Object postProcessBeforeDispense(Object bean, String beanName) throws RegistryException {
+                if (bean instanceof ActionContextAware) {
+                    ((ActionContextAware) bean).setActionContext(ActionContext.this);
+                }
+                if (bean instanceof SmartAction) {
+                    SmartAction action = (SmartAction) bean;
+                    if (action.getAction() instanceof ActionContextAware) {
+                        ((ActionContextAware) action.getAction()).setActionContext(ActionContext.this);
+                    }
+                }
+                return bean;
             }
         });
     }

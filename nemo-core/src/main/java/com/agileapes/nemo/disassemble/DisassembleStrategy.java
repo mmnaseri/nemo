@@ -6,6 +6,7 @@ import com.agileapes.nemo.error.OptionDefinitionException;
 import com.agileapes.nemo.option.OptionDescriptor;
 
 import java.io.PrintStream;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -109,5 +110,11 @@ public interface DisassembleStrategy<A> {
      * @return {@code true} if this strategy can manage the task of disassembling the action into its descriptive pieces
      */
     boolean accepts(Object action);
+
+    /**
+     * @param action the action
+     * @return the metadata associated with this action
+     */
+    Properties getMetadata(A action);
 
 }

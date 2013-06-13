@@ -2,6 +2,8 @@ package com.agileapes.nemo.option;
 
 import com.agileapes.nemo.error.OptionDefinitionException;
 
+import java.util.Properties;
+
 /**
  * This class encapsulates the definition of an option as seen by the framework, through what the action
  * developer has made available.
@@ -17,8 +19,10 @@ public class OptionDescriptor {
     private final boolean required;
     private final Class<?> type;
     private final Object defaultValue;
+    private final Properties properties;
 
-    public OptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue) throws OptionDefinitionException {
+    public OptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue, Properties properties) throws OptionDefinitionException {
+        this.properties = properties;
         if (name == null) {
             throw new OptionDefinitionException("Option name cannot be null");
         }
@@ -62,4 +66,11 @@ public class OptionDescriptor {
         return index != null;
     }
 
+    public boolean isFlag() {
+        return getType().equals(Boolean.class) || getType().equals(boolean.class);
+    }
+
+    public Properties getMetadata() {
+        return properties;
+    }
 }

@@ -8,12 +8,16 @@ import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.error.OptionDefinitionException;
 import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
+import com.agileapes.nemo.util.AnnotationPropertyBuilder;
+import com.agileapes.nemo.util.CollectionDSL;
 import com.agileapes.nemo.util.FieldAnnotationFilter;
 import com.agileapes.nemo.util.NonStaticFieldFilter;
 
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import static com.agileapes.nemo.util.ReflectionUtils.withFields;
@@ -42,7 +46,14 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
                             final String propertyName = field.getName();
                             final Option annotation = field.getAnnotation(Option.class);
                             try {
-                                descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field));
+                                final Properties properties = new Properties();
+                                CollectionDSL.with(field.getAnnotations()).each(new Callback<Annotation>() {
+                                    @Override
+                                    public void perform(Annotation item) {
+                                        new AnnotationPropertyBuilder(item).addTo(properties);
+                                    }
+                                });
+                                descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field, properties));
                             } catch (Throwable e) {
                                 throw new WrappedError(e);
                             }
@@ -87,12 +98,25 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
         return action instanceof Action && (!action.getClass().isAnnotationPresent(Disassembler.class) || action.getClass().getAnnotation(Disassembler.class).value().equals(getClass()));
     }
 
+    @Override
+    public Properties getMetadata(Action action) {
+        final Properties properties = new Properties();
+        CollectionDSL.with(action.getClass().getAnnotations())
+                .each(new Callback<Annotation>() {
+                    @Override
+                    public void perform(Annotation item) {
+                        new AnnotationPropertyBuilder(item).addTo(properties);
+                    }
+                });
+        return properties;
+    }
+
     public final static class FieldOptionDescriptor extends OptionDescriptor {
 
         private final Field field;
 
-        public FieldOptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue, Field field) throws OptionDefinitionException {
-            super(name, alias, index, required, type, defaultValue);
+        public FieldOptionDescriptor(String name, Character alias, Integer index, boolean required, Class<?> type, Object defaultValue, Field field, Properties properties) throws OptionDefinitionException {
+            super(name, alias, index, required, type, defaultValue, properties);
             this.field = field;
         }
 

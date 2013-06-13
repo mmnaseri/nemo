@@ -11,6 +11,7 @@ import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderAware;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;

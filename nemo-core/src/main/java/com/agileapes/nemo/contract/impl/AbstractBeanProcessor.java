@@ -18,6 +18,10 @@ public abstract class AbstractBeanProcessor implements BeanProcessor, OrderedBea
         this.order = order;
     }
 
+    public AbstractBeanProcessor() {
+        this.order = 0;
+    }
+
     @Override
     public Object postProcessBeforeRegistration(Object bean, String beanName) throws RegistryException {
         return bean;

@@ -1,8 +1,8 @@
 package com.agileapes.nemo.exec;
 
 import com.agileapes.nemo.action.Action;
-import com.agileapes.nemo.action.ActionContext;
-import com.agileapes.nemo.action.SmartAction;
+import com.agileapes.nemo.action.impl.ActionContext;
+import com.agileapes.nemo.action.impl.SmartAction;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.error.FatalExecutionException;
 import com.agileapes.nemo.error.NoSuchItemException;

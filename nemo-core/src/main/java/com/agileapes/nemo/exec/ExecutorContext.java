@@ -1,6 +1,6 @@
 package com.agileapes.nemo.exec;
 
-import com.agileapes.nemo.action.ActionContext;
+import com.agileapes.nemo.action.impl.ActionContext;
 import com.agileapes.nemo.contract.BeanProcessor;
 import com.agileapes.nemo.contract.Registry;
 import com.agileapes.nemo.contract.impl.AbstractBeanProcessor;

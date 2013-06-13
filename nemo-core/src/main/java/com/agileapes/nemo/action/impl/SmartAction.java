@@ -1,5 +1,6 @@
-package com.agileapes.nemo.action;
+package com.agileapes.nemo.action.impl;
 
+import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.DisassemblerAware;
 import com.agileapes.nemo.error.NoSuchOptionException;
@@ -8,6 +9,7 @@ import com.agileapes.nemo.error.RequiredOptionsMissingException;
 import com.agileapes.nemo.option.OptionDescriptor;
 
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -116,6 +118,29 @@ public class SmartAction<A> extends Action implements DisassemblerAware<A> {
     }
 
     /**
+     * @return the strategy used to disassemble the internally wrapped action
+     */
+    @Override
+    public DisassembleStrategy<A> getDisassembler() {
+        return strategy;
+    }
+
+    /**
+     * @return the wrapped action. Note that modifications to this object might change the behaviour of the system in a
+     * non-deterministic manner.
+     */
+    public A getAction() {
+        return action;
+    }
+
+    /**
+     * @return the metadata associated with this action
+     */
+    public Properties getMetadata() {
+        return strategy.getMetadata(action);
+    }
+
+    /**
      * Will execute the action after determining that all of its required options have been set.
      * @throws RequiredOptionsMissingException if one or more of the required options have not been set.
      * Remember that marking an option as required is at odds with providing a default value for it. Options
@@ -130,22 +155,6 @@ public class SmartAction<A> extends Action implements DisassemblerAware<A> {
         }
         strategy.setOutput(action, getOutput());
         strategy.getExecutable(action).execute();
-    }
-
-    /**
-     * @return the strategy used to disassemble the internally wrapped action
-     */
-    @Override
-    public DisassembleStrategy<A> getDisassembler() {
-        return strategy;
-    }
-
-    /**
-     * @return the wrapped action. Note that modifications to this object might change the behaviour of the system in a
-     * non-deterministic manner.
-     */
-    public A getAction() {
-        return action;
     }
 
 }

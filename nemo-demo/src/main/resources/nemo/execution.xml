@@ -22,5 +22,6 @@
 
     <bean name="action:list" class="com.agileapes.nemo.demo.ListAction"/>
     <bean name="action:read" class="com.agileapes.nemo.demo.ReadAction"/>
+    <bean name="action:help" class="com.agileapes.nemo.action.impl.HelpAction"/>
 
 </beans>

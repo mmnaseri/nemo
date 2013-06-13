@@ -16,6 +16,7 @@
 package com.agileapes.nemo.demo;
 
 import com.agileapes.nemo.exec.ExecutorContext;
+import com.agileapes.nemo.util.ExceptionMessage;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -31,7 +32,7 @@ public class Runner {
         try {
             new ClassPathXmlApplicationContext("nemo/execution.xml").getBean(ExecutorContext.class).execute(args);
         } catch (Throwable e) {
-            System.err.println("error: " + e.getMessage());
+            System.err.println("error: " + new ExceptionMessage(e).getMessage());
             System.exit(1);
         }
     }

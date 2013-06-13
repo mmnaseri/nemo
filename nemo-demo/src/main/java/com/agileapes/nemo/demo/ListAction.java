@@ -29,7 +29,7 @@ import java.io.File;
 public class ListAction extends Action {
 
     @Option(alias = 'x')
-    @Help(value = "Prints sequential file number prior to file path")
+    @Help(value = "Prints sequential file numbers prior to file path")
     private boolean numbers;
 
     @Override

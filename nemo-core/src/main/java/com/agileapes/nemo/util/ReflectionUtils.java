@@ -186,4 +186,13 @@ public abstract class ReflectionUtils {
         }));
     }
 
+    public static CollectionDSL.Wrapper<Method> withMethods(Class type) {
+        return CollectionDSL.with(getMethods(type, new Filter<Method>() {
+            @Override
+            public boolean accepts(Method item) {
+                return true;
+            }
+        }));
+    }
+
 }

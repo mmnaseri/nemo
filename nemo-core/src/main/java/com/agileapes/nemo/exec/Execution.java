@@ -1,6 +1,6 @@
 package com.agileapes.nemo.exec;
 
-import com.agileapes.nemo.action.ActionContext;
+import com.agileapes.nemo.action.impl.ActionContext;
 import com.agileapes.nemo.error.InvalidArgumentSyntaxException;
 import com.agileapes.nemo.error.NoDefaultActionException;
 import com.agileapes.nemo.option.Options;
