@@ -2,12 +2,13 @@ package com.agileapes.nemo.action.impl;
 
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionContextAware;
-import com.agileapes.nemo.contract.BeanProcessor;
 import com.agileapes.nemo.contract.impl.AbstractBeanProcessor;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
 import com.agileapes.nemo.error.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Collections;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
 
     private final Set<Action> internalActions = new CopyOnWriteArraySet<Action>();
     private final Map<String, Action> actions = new ConcurrentHashMap<String, Action>();
+    private final static Log log = LogFactory.getLog(ActionContext.class);
     private Action defaultAction = null;
 
     /**
@@ -39,8 +41,10 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
         addBeanProcessor(new AbstractBeanProcessor(Integer.MIN_VALUE) {
             @Override
             public Object postProcessBeforeRegistration(Object bean, String beanName) throws RegistryException {
+                log.info("Registering action <" + beanName + "> of type " + bean.getClass());
                 final DisassembleStrategy<Object> strategy;
                 try {
+                    log.info("Attempting to discern action strategy");
                     strategy = strategyContext.getStrategy(bean);
                 } catch (NoStrategyAttributedException e) {
                     throw new FatalRegistryException("Could not find a strategy matching the requirements of action: " + beanName, e);
@@ -55,26 +59,13 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
                     if (defaultAction != null) {
                         throw new ActionDefinitionException("Action " + action.getName() + " cannot be marked as default, because action " + defaultAction.getName() + " has already been set as the default action");
                     }
+                    log.info("Discovered the default action: " + beanName);
                     defaultAction = action;
                 } else if (action.isInternal()) {
+                    log.info("Discovered an internal action: " + beanName);
                     internalActions.add(action);
                 }
                 return action;
-            }
-        });
-        addBeanProcessor(new AbstractBeanProcessor() {
-            @Override
-            public Object postProcessBeforeDispense(Object bean, String beanName) throws RegistryException {
-                if (bean instanceof ActionContextAware) {
-                    ((ActionContextAware) bean).setActionContext(ActionContext.this);
-                }
-                if (bean instanceof SmartAction) {
-                    SmartAction action = (SmartAction) bean;
-                    if (action.getAction() instanceof ActionContextAware) {
-                        ((ActionContextAware) action.getAction()).setActionContext(ActionContext.this);
-                    }
-                }
-                return bean;
             }
         });
     }

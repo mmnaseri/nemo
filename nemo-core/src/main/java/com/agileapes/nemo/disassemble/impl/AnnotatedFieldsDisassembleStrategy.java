@@ -12,6 +12,8 @@ import com.agileapes.nemo.util.AnnotationPropertyBuilder;
 import com.agileapes.nemo.util.CollectionDSL;
 import com.agileapes.nemo.util.FieldAnnotationFilter;
 import com.agileapes.nemo.util.NonStaticFieldFilter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -32,10 +34,14 @@ import static com.agileapes.nemo.util.ReflectionUtils.withFields;
  */
 public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassembleStrategy<Action, AnnotatedFieldsDisassembleStrategy.FieldOptionDescriptor> {
 
+    private static final Log log = LogFactory.getLog(AnnotatedFieldsDisassembleStrategy.class);
+
     @Override
     protected Set<FieldOptionDescriptor> describe(final Action action) throws OptionDefinitionException {
+        log.info("Attempting to extrapolate options for action: " + action);
         final HashSet<FieldOptionDescriptor> descriptors = new HashSet<FieldOptionDescriptor>();
         try {
+            log.info("Scanning fields for annotation @Option");
             withFields(action.getClass())
                     .filter(new FieldAnnotationFilter(Option.class))
                     .filter(new NonStaticFieldFilter())
@@ -44,6 +50,7 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
                         public void perform(Field field) {
                             field.setAccessible(true);
                             final String propertyName = field.getName();
+                            log.info("Extracting metadata for field " + propertyName);
                             final Option annotation = field.getAnnotation(Option.class);
                             try {
                                 final Properties properties = new Properties();

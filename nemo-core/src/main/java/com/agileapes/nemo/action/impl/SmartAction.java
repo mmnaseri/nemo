@@ -1,6 +1,7 @@
 package com.agileapes.nemo.action.impl;
 
 import com.agileapes.nemo.action.Action;
+import com.agileapes.nemo.action.ActionContextAware;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.DisassemblerAware;
 import com.agileapes.nemo.error.NoSuchOptionException;
@@ -21,7 +22,7 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 17:18)
  */
-public class SmartAction<A> extends Action implements DisassemblerAware<A> {
+public class SmartAction<A> extends Action implements DisassemblerAware<A>, ActionContextAware {
 
     private final A action;
     private final DisassembleStrategy<A> strategy;
@@ -155,6 +156,13 @@ public class SmartAction<A> extends Action implements DisassemblerAware<A> {
         }
         strategy.setOutput(action, getOutput());
         strategy.getExecutable(action).execute();
+    }
+
+    @Override
+    public void setActionContext(ActionContext actionContext) {
+        if (action instanceof ActionContextAware) {
+            ((ActionContextAware) action).setActionContext(actionContext);
+        }
     }
 
 }

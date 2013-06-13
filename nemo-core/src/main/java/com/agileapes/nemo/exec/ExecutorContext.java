@@ -1,5 +1,6 @@
 package com.agileapes.nemo.exec;
 
+import com.agileapes.nemo.action.ActionContextAware;
 import com.agileapes.nemo.action.impl.ActionContext;
 import com.agileapes.nemo.contract.BeanProcessor;
 import com.agileapes.nemo.contract.Registry;
@@ -9,12 +10,17 @@ import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
 import com.agileapes.nemo.error.RegistryException;
+import com.agileapes.nemo.util.ExceptionMessage;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderAware;
 import com.agileapes.nemo.value.ValueReaderContext;
 import com.agileapes.nemo.value.impl.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * The executor context is the central context which holds all the other pieces of information required for the
@@ -39,8 +45,12 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
     private final ValueReaderContext valueReaderContext;
     private final ActionContext actionRegistry;
     private final Executor executor;
+    private final Date startupDate;
+    private final static Log log = LogFactory.getLog(ExecutorContext.class);
 
     public ExecutorContext() {
+        log.info("Starting executor context ...");
+        final long time = System.currentTimeMillis();
         valueReaderContext = new DefaultValueReaderContext();
         strategyContext = new DisassembleStrategyContext();
         actionRegistry = new ActionContext(strategyContext);
@@ -56,18 +66,31 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
             addValueReader(new FileValueReader());
             addValueReader(new PrimitiveValueReader());
             addValueReader(new UrlValueReader());
-            addBeanProcessor(new AbstractBeanProcessor(0) {
+            addBeanProcessor(new AbstractBeanProcessor() {
                 @Override
                 public Object postProcessBeforeDispense(Object bean, String beanName) throws RegistryException {
                     if (bean instanceof ValueReaderAware) {
-                        ValueReaderAware aware = (ValueReaderAware) bean;
-                        aware.setValueReader(valueReaderContext);
+                        log.info("Injecting value reader context to bean: " + beanName);
+                        ((ValueReaderAware) bean).setValueReader(valueReaderContext);
+                    }
+                    return bean;
+                }
+            });
+            addBeanProcessor(new AbstractBeanProcessor() {
+                @Override
+                public Object postProcessBeforeDispense(Object bean, String beanName) throws RegistryException {
+                    if (bean instanceof ActionContextAware) {
+                        log.info("Injecting action context to bean: " + beanName);
+                        ((ActionContextAware) bean).setActionContext(actionRegistry);
                     }
                     return bean;
                 }
             });
         } catch (RegistryException ignored) {
         }
+        startupDate = new Date();
+        log.info("Bootstrapping took " + (System.currentTimeMillis() - time) + "ms");
+        log.info("System startup date is " + startupDate);
     }
 
     protected void addBean(String name, Object bean) throws RegistryException {
@@ -76,6 +99,7 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
         } else if (name.equals(bean.getClass().getCanonicalName())) {
             name = name + "#" + getMap().size();
         }
+        log.debug("Registering bean <" + name + ">");
         register(name, bean);
     }
 
@@ -89,14 +113,17 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
     }
 
     public void addValueReader(ValueReader valueReader) throws RegistryException {
+        log.info("Adding value reader: " + valueReader.getClass().getCanonicalName());
         registerBean(valueReaderContext, valueReader);
     }
 
     public void addDisassembleStrategy(DisassembleStrategy strategy) throws RegistryException {
+        log.info("Adding disassemble strategy: " + strategy.getClass().getCanonicalName());
         registerBean(strategyContext, strategy);
     }
 
     public void addAction(String target, Object action) throws RegistryException {
+        log.info("Registering action target: " + target);
         registerBean(actionRegistry, target, action);
     }
 
@@ -113,18 +140,35 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
     }
 
     public void execute(PrintStream out, String... args) throws Exception {
-        executor.execute(out, args);
+        log.info("Starting execution ...");
+        log.debug("Provided arguments are: " + Arrays.toString(args));
+        if (System.out.equals(out)) {
+            log.debug("Output is redirected to the standard output");
+        }
+        try {
+            executor.execute(out, args);
+        } catch (Exception e) {
+            log.error("Errors prevented the execution of the system");
+            if (log.isDebugEnabled()) {
+                log.error(new ExceptionMessage(e).getMessage());
+            }
+        }
     }
 
     public void execute(String... args) throws Exception {
-        executor.execute(args);
+        execute(System.out, args);
     }
 
     @Override
     public void addBeanProcessor(BeanProcessor beanProcessor) {
+        log.debug("Registering bean processor with all available internal contexts");
         valueReaderContext.addBeanProcessor(beanProcessor);
         actionRegistry.addBeanProcessor(beanProcessor);
         strategyContext.addBeanProcessor(beanProcessor);
         super.addBeanProcessor(beanProcessor);
+    }
+
+    public Date getStartupDate() {
+        return startupDate;
     }
 }

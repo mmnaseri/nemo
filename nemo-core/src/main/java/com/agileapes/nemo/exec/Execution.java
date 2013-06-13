@@ -5,6 +5,8 @@ import com.agileapes.nemo.error.InvalidArgumentSyntaxException;
 import com.agileapes.nemo.error.NoDefaultActionException;
 import com.agileapes.nemo.option.Options;
 
+import java.util.Arrays;
+
 /**
  * The execution abstracts the meaning of an action being invoked from the command line.
  *
@@ -43,6 +45,11 @@ public class Execution {
 
     public Options getOptions() {
         return options;
+    }
+
+    @Override
+    public String toString() {
+        return target + " " + Arrays.toString(getArguments());
     }
 
 }

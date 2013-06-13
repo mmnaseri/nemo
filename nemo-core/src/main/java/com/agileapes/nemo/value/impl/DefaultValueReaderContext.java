@@ -19,6 +19,8 @@ import com.agileapes.nemo.contract.Filter;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import static com.agileapes.nemo.util.CollectionDSL.with;
 
@@ -29,6 +31,8 @@ import static com.agileapes.nemo.util.CollectionDSL.with;
  * @since 1.0 (2013/6/4, 19:10)
  */
 public class DefaultValueReaderContext extends AbstractThreadSafeContext<ValueReader> implements ValueReaderContext {
+
+    private static final Log log = LogFactory.getLog(ValueReaderContext.class);
 
     private static class ValueReaderFilter implements Filter<ValueReader> {
 
@@ -57,6 +61,7 @@ public class DefaultValueReaderContext extends AbstractThreadSafeContext<ValueRe
 
     @Override
     public <E> E read(String text, final Class<E> type) {
+        log.info("Reading value of type " + type.getCanonicalName() + " from input: " + text);
         try {
             return with(getMap().values())
                     .filter(new ValueReaderFilter(type)).first().read(text, type);

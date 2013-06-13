@@ -28,7 +28,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class Runner {
 
     public static void main(String[] args) throws Exception {
-        Logger.getLogger("com.agileapes.nemo").setLevel(Level.OFF);
+//        Logger.getLogger("com.agileapes.nemo").setLevel(Level.OFF);
         try {
             new ClassPathXmlApplicationContext("nemo/execution.xml").getBean(ExecutorContext.class).execute(args);
         } catch (Throwable e) {

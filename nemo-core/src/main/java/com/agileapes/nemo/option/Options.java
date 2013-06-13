@@ -1,7 +1,10 @@
 package com.agileapes.nemo.option;
 
 import com.agileapes.nemo.error.InvalidArgumentSyntaxException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +40,8 @@ public class Options {
 
     public static class Builder {
 
+        private static final Log log = LogFactory.getLog(Builder.class);
+
         public static final String OPTION_PREFIX = "--";
         public static final String DEFAULT_FLAG_VALUE = "true";
         public static final String ALIAS_PREFIX = "-";
@@ -47,6 +52,7 @@ public class Options {
         }
 
         public Options build() throws InvalidArgumentSyntaxException {
+            log.info("Parsing input arguments " + Arrays.toString(arguments));
             final Options options = new Options();
             int index = 0;
             for (int i = 0; i < arguments.length; i++) {

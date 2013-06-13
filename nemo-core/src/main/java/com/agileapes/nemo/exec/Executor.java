@@ -1,13 +1,13 @@
 package com.agileapes.nemo.exec;
 
-import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.impl.ActionContext;
 import com.agileapes.nemo.action.impl.SmartAction;
-import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.error.FatalExecutionException;
 import com.agileapes.nemo.error.NoSuchItemException;
 import com.agileapes.nemo.error.TargetNotFoundException;
 import com.agileapes.nemo.option.Options;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.PrintStream;
 import java.util.Map;
@@ -23,6 +23,7 @@ import java.util.Map;
  */
 public class Executor {
 
+    private static final Log log = LogFactory.getLog(Executor.class);
     private final ActionContext actionRegistry;
     private Execution execution;
     private PrintStream output;
@@ -39,10 +40,6 @@ public class Executor {
         return output;
     }
 
-    public void execute(String... args) throws Exception {
-        execute(System.out, args);
-    }
-
     public void execute(PrintStream output, String... args) throws Exception {
         this.output = output;
         execution = new Execution(actionRegistry, args);
@@ -50,56 +47,41 @@ public class Executor {
     }
 
     public void perform(Execution execution) throws Exception {
+        log.debug("Performing execution: " + execution);
         final SmartAction action;
         try {
             action = (SmartAction) actionRegistry.get(execution.getTarget());
         } catch (NoSuchItemException e) {
+            log.error("Specified action not found: " + execution.getTarget());
             throw new TargetNotFoundException(execution.getTarget());
         }
         if (action.isInternal()) {
+            log.error("Attempting to call internal action " + execution.getTarget() + " from the command line");
             throw new IllegalAccessException("Internal action '" + execution.getTarget() + "' cannot be called from the command line");
         }
         action.setOutput(output);
         try {
+            log.debug("Resetting options for action");
             action.reset();
         } catch (Throwable e) {
             throw new FatalExecutionException("Could not reset options for action: " + execution.getTarget());
         }
+        log.info("Setting option values");
         final Options options = execution.getOptions();
         for (Map.Entry<String, String> entry : options.getOptions().entrySet()) {
+            log.debug("Setting --" + entry.getKey() + "=" + entry.getValue());
             action.setOption(entry.getKey(), entry.getValue());
         }
         for (Map.Entry<Character, String> entry : options.getAliases().entrySet()) {
+            log.debug("Setting -" + entry.getKey() + "=" + entry.getValue());
             action.setOption(entry.getKey(), entry.getValue());
         }
         for (Map.Entry<Integer, String> entry : options.getIndexes().entrySet()) {
+            log.debug("Setting %" + entry.getKey() + "=" + entry.getValue());
             action.setOption(entry.getKey(), entry.getValue());
         }
+        log.info("Delegating execution to the action");
         action.execute();
-    }
-
-    public static void main(String[] args) throws Exception {
-        final Action action = new Action() {
-
-            @Option(alias = 'n')
-            private String name = "Mickey";
-
-            @Option(index = 0)
-            private String nickname;
-
-            @Override
-            public void execute() throws Exception {
-                getOutput().print("Hello, " + name);
-                if (nickname != null) {
-                    getOutput().print(", the " + nickname);
-                }
-                getOutput().println();
-            }
-        };
-        action.setDefaultAction(true);
-        final ExecutorContext context = new ExecutorContext();
-        context.addAction("hail", action);
-        context.execute("hail", "Milad");
     }
 
 }
