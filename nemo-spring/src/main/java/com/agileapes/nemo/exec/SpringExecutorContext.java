@@ -1,9 +1,13 @@
 package com.agileapes.nemo.exec;
 
 import com.agileapes.nemo.action.Action;
+import com.agileapes.nemo.api.Command;
 import com.agileapes.nemo.api.Disassembler;
+import com.agileapes.nemo.contract.ActionDiscoverer;
 import com.agileapes.nemo.contract.BeanProcessor;
+import com.agileapes.nemo.contract.impl.AnnotatedActionDiscoverer;
 import com.agileapes.nemo.contract.impl.SpringBeanProcessor;
+import com.agileapes.nemo.contract.impl.TypedActionDiscoverer;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.value.ValueReader;
@@ -28,10 +32,20 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
 
     public static final String ACTION_PREFIX = "action:";
     private static final Log log = LogFactory.getLog(ExecutorContext.class.getCanonicalName().concat(".spring"));
+    private final Set<ActionDiscoverer> discoverers;
+
+    public SpringExecutorContext() {
+        discoverers = new HashSet<ActionDiscoverer>();
+        discoverers.add(new TypedActionDiscoverer(Action.class));
+        discoverers.add(new AnnotatedActionDiscoverer(Disassembler.class));
+        discoverers.add(new AnnotatedActionDiscoverer(Command.class));
+    }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         log.info("Starting to look through Spring's application context");
+        log.info("Looking for ways to discover new actions: ");
+        discoverers.addAll(beanFactory.getBeansOfType(ActionDiscoverer.class, false, true).values());
         final Set<Object> springContextItems = new HashSet<Object>();
         springContextItems.addAll(handleStrategies(beanFactory));
         springContextItems.addAll(handleValueReaders(beanFactory));
@@ -112,37 +126,27 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
     private Set<Object> handleActions(ConfigurableListableBeanFactory beanFactory) {
         final Set<Object> newItems = new HashSet<Object>();
         log.info("Looking for actions ...");
-        final String[] names = beanFactory.getBeanNamesForType(Action.class, false, true);
-        for (String name : names) {
-            try {
-                final Action action = beanFactory.getBean(name, Action.class);
-                newItems.add(action);
-                if (name.startsWith(ACTION_PREFIX)) {
-                    name = name.substring(ACTION_PREFIX.length());
+        for (ActionDiscoverer discoverer : discoverers) {
+            log.info("Attempting to find new actions using " + discoverer.getClass().getCanonicalName());
+            final Map<String, Object> map = discoverer.map(beanFactory);
+            int found = newItems.size();
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (newItems.add(entry.getValue())) {
+                    try {
+                        String name = entry.getKey();
+                        if (name.startsWith(ACTION_PREFIX)) {
+                            name = name.substring(ACTION_PREFIX.length());
+                        }
+                        addAction(name, entry.getValue());
+                    } catch (RegistryException e) {
+                        throw new FatalBeanException("Failed to register action", e);
+                    }
+                } else {
+                    log.warn("Ignoring action <" + entry.getKey() + "> because it was already discovered by another discoverer");
                 }
-                log.debug("Discovered action " + name);
-                addAction(name, action);
-            } catch (RegistryException e) {
-                throw new FatalBeanException("Failed to register value reader", e);
             }
-        }
-        log.info("Looking for items annotated with @Disassembler");
-        final Map<String, Object> beans = beanFactory.getBeansWithAnnotation(Disassembler.class);
-        for (Map.Entry<String, Object> entry : beans.entrySet()) {
-            if (newItems.contains(entry.getValue())) {
-                continue;
-            }
-            newItems.add(entry.getValue());
-            try {
-                String name = entry.getKey();
-                if (name.startsWith(ACTION_PREFIX)) {
-                    name = name.substring(ACTION_PREFIX.length());
-                }
-                log.debug("Discovered annotated action: " + name);
-                addAction(name, entry.getValue());
-            } catch (RegistryException e) {
-                throw new FatalBeanException("Failed to register value reader", e);
-            }
+            found = newItems.size() - found;
+            log.info("Found " + found + " new action(s)");
         }
         return newItems;
     }
