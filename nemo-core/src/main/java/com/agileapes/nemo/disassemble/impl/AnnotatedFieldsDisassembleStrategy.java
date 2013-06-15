@@ -1,6 +1,7 @@
 package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.nemo.action.Action;
+import com.agileapes.nemo.api.Command;
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.contract.Callback;
@@ -102,7 +103,9 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
 
     @Override
     public boolean accepts(Object action) {
-        return action instanceof Action && (!action.getClass().isAnnotationPresent(Disassembler.class) || action.getClass().getAnnotation(Disassembler.class).value().equals(getClass()));
+        return action instanceof Action &&
+                (!action.getClass().isAnnotationPresent(Disassembler.class) || action.getClass().getAnnotation(Disassembler.class).value().equals(getClass())) &&
+                (!action.getClass().isAnnotationPresent(Command.class));
     }
 
     @Override

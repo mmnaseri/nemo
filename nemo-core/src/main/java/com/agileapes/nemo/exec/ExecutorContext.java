@@ -8,6 +8,7 @@ import com.agileapes.nemo.contract.impl.AbstractBeanProcessor;
 import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
+import com.agileapes.nemo.disassemble.impl.CommandStatementDisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.util.ExceptionMessage;
@@ -60,6 +61,7 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
             registerBean(this, strategyContext);
             registerBean(this, actionRegistry);
             addDisassembleStrategy(new AnnotatedFieldsDisassembleStrategy());
+            addDisassembleStrategy(new CommandStatementDisassembleStrategy());
             addValueReader(new ClassValueReader());
             addValueReader(new DateValueReader());
             addValueReader(new EnumValueReader());
@@ -152,11 +154,17 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
             if (log.isDebugEnabled()) {
                 log.error(new ExceptionMessage(e).getMessage());
             }
+            throw e;
         }
     }
 
     public void execute(String... args) throws Exception {
         execute(System.out, args);
+    }
+
+    @Override
+    protected Class<Object> getType() {
+        return Object.class;
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.agileapes.nemo.error.NoSuchItemException;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.util.CollectionDSL;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -28,6 +29,8 @@ public abstract class AbstractContext<C> implements Context<C> {
      * @return the map which will contain the registry of the beans
      */
     protected abstract Map<String, C> getMap();
+
+    protected abstract Class<C> getType();
 
     /**
      * This parameter, if set to {@link true} will enforce a policy for registration of beans that will require all
@@ -61,6 +64,9 @@ public abstract class AbstractContext<C> implements Context<C> {
 
     @Override
     public C[] find(Filter<C> filter) throws RegistryException {
+        if (getMap().isEmpty()) {
+            throw new NoSuchItemException(null);
+        }
         final Set<C> set = new HashSet<C>();
         for (Map.Entry<String, C> entry : getMap().entrySet()) {
             if (filter.accepts(entry.getValue())) {
@@ -68,7 +74,7 @@ public abstract class AbstractContext<C> implements Context<C> {
             }
         }
         //noinspection unchecked
-        return (C[]) set.toArray();
+        return set.toArray((C[]) Array.newInstance(getType(), set.size()));
     }
 
     @SuppressWarnings("unchecked")

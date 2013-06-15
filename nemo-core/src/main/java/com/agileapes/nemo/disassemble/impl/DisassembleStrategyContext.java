@@ -93,4 +93,9 @@ public class DisassembleStrategyContext extends AbstractThreadSafeContext<Disass
         }
     }
 
+    @Override
+    protected Class<DisassembleStrategy> getType() {
+        return DisassembleStrategy.class;
+    }
+
 }

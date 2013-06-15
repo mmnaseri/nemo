@@ -33,9 +33,15 @@ public class SmartAction<A> extends Action implements DisassemblerAware<A>, Acti
      * @param action      the action
      * @param strategy    the strategy
      */
-    public SmartAction(A action, DisassembleStrategy<A> strategy) {
+    public SmartAction(A action, DisassembleStrategy<A> strategy) throws OptionDefinitionException {
         this.action = action;
         this.strategy = strategy;
+        for (OptionDescriptor descriptor : strategy.getOptions(action)) {
+            if (descriptor.isRequired()) {
+                required.add(descriptor);
+            }
+        }
+
     }
 
     /**

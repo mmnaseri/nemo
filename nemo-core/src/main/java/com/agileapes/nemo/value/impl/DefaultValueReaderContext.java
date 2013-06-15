@@ -34,6 +34,11 @@ public class DefaultValueReaderContext extends AbstractThreadSafeContext<ValueRe
 
     private static final Log log = LogFactory.getLog(ValueReaderContext.class);
 
+    @Override
+    protected Class<ValueReader> getType() {
+        return ValueReader.class;
+    }
+
     private static class ValueReaderFilter implements Filter<ValueReader> {
 
         private final Class targetType;

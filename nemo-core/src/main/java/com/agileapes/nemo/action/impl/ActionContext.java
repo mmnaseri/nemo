@@ -48,7 +48,12 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
                 } catch (NoStrategyAttributedException e) {
                     throw new FatalRegistryException("Could not find a strategy matching the requirements of action: " + beanName, e);
                 }
-                final SmartAction<Object> action = new SmartAction<Object>(bean, strategy);
+                final SmartAction<Object> action;
+                try {
+                    action = new SmartAction<Object>(bean, strategy);
+                } catch (OptionDefinitionException e) {
+                    throw new ActionDefinitionException("Could not define action", e);
+                }
                 action.setName(beanName);
                 actions.put(action.getName(), action);
                 if (action.isDefaultAction()) {
@@ -105,6 +110,11 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
      */
     public Set<String> getTargets() {
         return Collections.unmodifiableSet(actions.keySet());
+    }
+
+    @Override
+    protected Class<Object> getType() {
+        return Object.class;
     }
 
 }

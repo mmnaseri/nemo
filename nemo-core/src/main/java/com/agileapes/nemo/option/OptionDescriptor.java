@@ -67,10 +67,16 @@ public class OptionDescriptor {
     }
 
     public boolean isFlag() {
-        return getType().equals(Boolean.class) || getType().equals(boolean.class);
+        return Boolean.class.equals(getType()) || boolean.class.equals(getType());
     }
 
     public Properties getMetadata() {
         return properties;
     }
+
+    @Override
+    public String toString() {
+        return (!required ? "[" : "") + "--" + name + (alias != null ? "|" + alias : "") + (!required ? "]" : "");
+    }
+
 }
