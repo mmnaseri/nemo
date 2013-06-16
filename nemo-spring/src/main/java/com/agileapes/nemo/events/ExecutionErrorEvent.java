@@ -1,7 +1,6 @@
 package com.agileapes.nemo.events;
 
 import com.agileapes.nemo.exec.ExecutorContext;
-import org.springframework.context.ApplicationEvent;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)

@@ -82,7 +82,24 @@ public class HelpAction extends Action implements ActionContextAware {
                     for (int i = 0; i < length - name.length(); i ++) {
                         output.print(" ");
                     }
-                    output.print(((Map<String, Object>) metadata.get(HELP)).get("value"));
+                    int indent = length + 3;
+                    String message = (String) ((Map<String, Object>) metadata.get(HELP)).get("value");
+                    message = message.trim();
+                    while (message.length() > 65) {
+                        int i = 65;
+                        while (!Character.isWhitespace(message.charAt(i))) {
+                            i --;
+                        }
+                        output.print(message.substring(0, i));
+                        message = message.substring(i).trim();
+                        if (!message.isEmpty()) {
+                            output.println();
+                            for (int j = 0; j < indent; j ++) {
+                                output.print(" ");
+                            }
+                        }
+                    }
+                    output.print(message);
                 }
                 output.println();
             }
