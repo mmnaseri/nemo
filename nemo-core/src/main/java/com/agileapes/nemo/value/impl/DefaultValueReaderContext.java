@@ -61,7 +61,8 @@ public class DefaultValueReaderContext extends AbstractThreadSafeContext<ValueRe
     @Override
     public boolean handles(Class<?> type) {
         return !with(getMap().values())
-                .filter(new ValueReaderFilter(type)).list().isEmpty();
+                .filter(new ValueReaderFilter(type))
+                .list().isEmpty();
     }
 
     @Override
@@ -69,7 +70,9 @@ public class DefaultValueReaderContext extends AbstractThreadSafeContext<ValueRe
         log.info("Reading value of type " + type.getCanonicalName() + " from input: " + text);
         try {
             return with(getMap().values())
-                    .filter(new ValueReaderFilter(type)).first().read(text, type);
+                    .filter(new ValueReaderFilter(type))
+                    .first()
+                    .read(text, type);
         } catch (IndexOutOfBoundsException e) {
             throw new IllegalArgumentException("No value reader for: " + type.getCanonicalName());
         }
