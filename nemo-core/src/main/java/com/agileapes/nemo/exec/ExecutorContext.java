@@ -11,6 +11,12 @@ import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.CommandStatementDisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
 import com.agileapes.nemo.error.RegistryException;
+import com.agileapes.nemo.event.Event;
+import com.agileapes.nemo.event.EventListener;
+import com.agileapes.nemo.event.EventPublisher;
+import com.agileapes.nemo.event.impl.DefaultEventPublisher;
+import com.agileapes.nemo.event.impl.events.ExecutionErrorEvent;
+import com.agileapes.nemo.event.impl.events.ExecutionStartedEvent;
 import com.agileapes.nemo.util.ExceptionMessage;
 import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderAware;
@@ -40,13 +46,14 @@ import java.util.Date;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/11, 14:30)
  */
-public class ExecutorContext extends AbstractThreadSafeContext<Object> {
+public class ExecutorContext extends AbstractThreadSafeContext<Object> implements EventPublisher {
 
     private final DisassembleStrategyContext strategyContext;
     private final ValueReaderContext valueReaderContext;
     private final ActionContext actionRegistry;
     private final Executor executor;
     private final Date startupDate;
+    private final DefaultEventPublisher eventPublisher;
     private final static Log log = LogFactory.getLog(ExecutorContext.class);
 
     public ExecutorContext() {
@@ -55,7 +62,8 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
         valueReaderContext = new DefaultValueReaderContext();
         strategyContext = new DisassembleStrategyContext();
         actionRegistry = new ActionContext(strategyContext);
-        executor = new Executor(actionRegistry);
+        executor = new Executor(actionRegistry, this);
+        eventPublisher = new DefaultEventPublisher();
         try {
             registerBean(this, valueReaderContext);
             registerBean(this, strategyContext);
@@ -129,6 +137,12 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
         registerBean(actionRegistry, target, action);
     }
 
+    public void addEventListener(EventListener listener) throws RegistryException {
+        log.info("Registering event listener: " + listener);
+        String name = listener.getClass().getCanonicalName() == null ? EventListener.class.getCanonicalName().concat("#" + getMap().size()) : listener.getClass().getCanonicalName();
+        registerBean(eventPublisher, name, listener);
+    }
+
     public DisassembleStrategyContext getStrategyContext() {
         return strategyContext;
     }
@@ -139,27 +153,6 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
 
     public ActionContext getActionRegistry() {
         return actionRegistry;
-    }
-
-    public void execute(PrintStream out, String... args) throws Exception {
-        log.info("Starting execution ...");
-        log.debug("Provided arguments are: " + Arrays.toString(args));
-        if (System.out.equals(out)) {
-            log.debug("Output is redirected to the standard output");
-        }
-        try {
-            executor.execute(out, args);
-        } catch (Exception e) {
-            log.error("Errors prevented the execution of the system");
-            if (log.isDebugEnabled()) {
-                log.error(new ExceptionMessage(e).getMessage());
-            }
-            throw e;
-        }
-    }
-
-    public void execute(String... args) throws Exception {
-        execute(System.out, args);
     }
 
     @Override
@@ -179,4 +172,35 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
     public Date getStartupDate() {
         return startupDate;
     }
+
+    @Override
+    public <E extends Event> E publishEvent(E event) {
+        return eventPublisher.publishEvent(event);
+    }
+
+    public void execute(String... args) throws Exception {
+        execute(System.out, args);
+    }
+
+    public void execute(PrintStream out, String... args) throws Exception {
+        log.info("Starting execution ...");
+        log.debug("Provided arguments are: " + Arrays.toString(args));
+        final ExecutionStartedEvent event = publishEvent(new ExecutionStartedEvent(this, args, out));
+        args = event.getArguments();
+        out = event.getOutput();
+        if (System.out.equals(out)) {
+            log.debug("Output is redirected to the standard output");
+        }
+        try {
+            executor.execute(out, args);
+        } catch (Exception e) {
+            e = publishEvent(new ExecutionErrorEvent(this, e)).getError();
+            log.error("Errors prevented the execution of the system");
+            if (log.isDebugEnabled()) {
+                log.error(new ExceptionMessage(e));
+            }
+            throw e;
+        }
+    }
+
 }

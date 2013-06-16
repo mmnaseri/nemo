@@ -119,4 +119,20 @@ public abstract class AbstractContext<C> implements Context<C> {
     public List<BeanProcessor> getBeanProcessors() {
         return beanProcessors;
     }
+
+    public Collection<C> getBeans() {
+        return getMap().values();
+    }
+
+    public List<C> getOrderedBeans() {
+        return CollectionDSL.sorted(getBeans(), new Comparator<C>() {
+            @Override
+            public int compare(C o1, C o2) {
+                final Integer first = o1 instanceof OrderedBean ? ((OrderedBean) o1).getOrder() : 0;
+                final Integer second = o2 instanceof OrderedBean ? ((OrderedBean) o2).getOrder() : 0;
+                return first.compareTo(second);
+            }
+        });
+    }
+
 }

@@ -10,6 +10,7 @@ import com.agileapes.nemo.contract.impl.SpringBeanProcessor;
 import com.agileapes.nemo.contract.impl.TypedActionDiscoverer;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.error.RegistryException;
+import com.agileapes.nemo.events.SpringEventTranslator;
 import com.agileapes.nemo.value.ValueReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +19,8 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,17 +31,20 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/12, 3:12)
  */
-public class SpringExecutorContext extends ExecutorContext implements BeanFactoryPostProcessor {
+public class SpringExecutorContext extends ExecutorContext implements BeanFactoryPostProcessor, ApplicationContextAware {
 
     public static final String ACTION_PREFIX = "action:";
     private static final Log log = LogFactory.getLog(ExecutorContext.class.getCanonicalName().concat(".spring"));
     private final Set<ActionDiscoverer> discoverers;
+    private final SpringEventTranslator translator;
 
-    public SpringExecutorContext() {
+    public SpringExecutorContext() throws RegistryException {
         discoverers = new HashSet<ActionDiscoverer>();
         discoverers.add(new TypedActionDiscoverer(Action.class));
         discoverers.add(new AnnotatedActionDiscoverer(Disassembler.class));
         discoverers.add(new AnnotatedActionDiscoverer(Command.class));
+        translator = new SpringEventTranslator();
+        addEventListener(translator);
     }
 
     @Override
@@ -149,6 +155,11 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
             log.info("Found " + found + " new action(s)");
         }
         return newItems;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        translator.setApplicationContext(applicationContext);
     }
 
 }

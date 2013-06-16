@@ -22,4 +22,9 @@ public class ExceptionMessage {
         return stringBuilder.toString();
     }
 
+    @Override
+    public String toString() {
+        return getMessage();
+    }
+
 }

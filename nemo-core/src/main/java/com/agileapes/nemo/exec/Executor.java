@@ -5,6 +5,7 @@ import com.agileapes.nemo.action.impl.SmartAction;
 import com.agileapes.nemo.error.FatalExecutionException;
 import com.agileapes.nemo.error.NoSuchItemException;
 import com.agileapes.nemo.error.TargetNotFoundException;
+import com.agileapes.nemo.event.impl.events.PerformingExecutionEvent;
 import com.agileapes.nemo.option.Options;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,11 +26,13 @@ public class Executor {
 
     private static final Log log = LogFactory.getLog(Executor.class);
     private final ActionContext actionRegistry;
+    private final ExecutorContext executorContext;
     private Execution execution;
     private PrintStream output;
 
-    Executor(ActionContext actionRegistry) {
+    Executor(ActionContext actionRegistry, ExecutorContext executorContext) {
         this.actionRegistry = actionRegistry;
+        this.executorContext = executorContext;
     }
 
     public Execution getExecution() {
@@ -48,6 +51,7 @@ public class Executor {
 
     public void perform(Execution execution) throws Exception {
         log.debug("Performing execution: " + execution);
+        execution = executorContext.publishEvent(new PerformingExecutionEvent(this, execution)).getExecution();
         final SmartAction action;
         try {
             action = (SmartAction) actionRegistry.get(execution.getTarget());

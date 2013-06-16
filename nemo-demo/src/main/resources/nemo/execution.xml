@@ -27,5 +27,6 @@
     <bean name="action:usage" class="com.agileapes.nemo.action.impl.UsageAction">
         <property name="defaultAction" value="true"/>
     </bean>
+    <bean class="com.agileapes.nemo.demo.HelkRedirector"/>
 
 </beans>
