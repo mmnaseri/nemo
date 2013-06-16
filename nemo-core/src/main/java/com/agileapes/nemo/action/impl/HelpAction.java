@@ -17,6 +17,13 @@ import java.util.*;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/13/13, 11:58 AM)
  */
+@Help(
+        value = "Provides help for the application as a whole, and specific targets if need be",
+        description = "To get help for a specific target use '--target', and to see option helps " +
+                "use '--option'.\n" +
+                "Setting '--option' or '--target' to '*' is the same as leaving them " +
+                "unset, which means you do not care for a specific target or option."
+)
 @Disassembler(AnnotatedFieldsDisassembleStrategy.class)
 public class HelpAction extends Action implements ActionContextAware {
 
@@ -25,9 +32,11 @@ public class HelpAction extends Action implements ActionContextAware {
     private ActionContext actionContext;
 
     @Option(index = 0)
+    @Help("Determines which target you want help with")
     private String target = ALL;
 
     @Option(index = 1)
+    @Help("Determines which options you want help with")
     private String option = ALL;
 
     @Override
@@ -38,6 +47,12 @@ public class HelpAction extends Action implements ActionContextAware {
     @SuppressWarnings("unchecked")
     @Override
     public void execute() throws Exception {
+        if (target == null || target.isEmpty()) {
+            target = ALL;
+        }
+        if (option == null || option.isEmpty()) {
+            option = ALL;
+        }
         if (ALL.equals(target) && ALL.equals(option)) {
             //we need help for all the available actions
             final List<String> names = CollectionDSL.sorted(actionContext.getActions().keySet());
@@ -93,6 +108,9 @@ public class HelpAction extends Action implements ActionContextAware {
                     if (descriptor.hasAlias()) {
                         output.print(" (or -" + descriptor.getAlias() + ")");
                     }
+                    if (!descriptor.isRequired()) {
+                        output.print(" (optional)");
+                    }
                     output.println();
                 }
             }
@@ -131,6 +149,11 @@ public class HelpAction extends Action implements ActionContextAware {
                 output.println();
             } else {
                 output.println("Here value is " + ReflectionUtils.describeType(descriptor.getType()));
+            }
+            if (!descriptor.isRequired()) {
+                output.println("Setting this option is not mandatory.");
+                output.println("The default value for this option " +
+                        "is: " + descriptor.getDefaultValue());
             }
             printHelp(descriptor.getMetadata());
         }

@@ -3,6 +3,7 @@ package com.agileapes.nemo.action.impl;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionContextAware;
 import com.agileapes.nemo.api.Disassembler;
+import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.contract.Callback;
 import com.agileapes.nemo.contract.Filter;
@@ -19,12 +20,22 @@ import static com.agileapes.nemo.util.CollectionDSL.with;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/13/13, 1:46 PM)
  */
+@Help(
+        value = "Prints usage information for the application",
+        description = "If you want to see how you should run a specific target, you should use " +
+                "the '--target' option, which allows you to specify one of the available target."
+)
 @Disassembler(AnnotatedFieldsDisassembleStrategy.class)
 public class UsageAction extends Action implements ActionContextAware {
 
     private static final String ALL = "*";
 
     @Option(index = 0)
+    @Help(
+            value = "Let's you determine which target you want help with",
+            description = "You can get usage information for the application as a whole by leaving this " +
+                    "option unset, or setting it to '*'"
+    )
     private String target = ALL;
     private ActionContext actionContext;
 
@@ -35,6 +46,9 @@ public class UsageAction extends Action implements ActionContextAware {
 
     @Override
     public void execute() throws Exception {
+        if (target == null || target.isEmpty()) {
+            target = ALL;
+        }
         if (ALL.equals(target)) {
             output.print("Usage: %APPLICATION%");
             final List<String> list = CollectionDSL.sorted(with(actionContext.getTargets())
