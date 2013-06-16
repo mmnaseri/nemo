@@ -14,6 +14,8 @@ import org.springframework.context.ApplicationEvent;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import static com.agileapes.nemo.util.ReflectionUtils.withMethods;
+
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 3:58 PM)
@@ -54,12 +56,12 @@ public class SpringEventTranslator implements EventListener<Event>, ApplicationC
             log.error("Failed to instantiated translation for " + event.getClass().getSimpleName(), e);
             return;
         }
-        ReflectionUtils.withMethods(event.getClass())
+        withMethods(event.getClass())
                 .filter(new GetterMethodFilter())
                 .each(new Callback<Method>() {
                     @Override
                     public void perform(Method getter) {
-                        final CollectionDSL.Wrapper<Method> setters = ReflectionUtils.withMethods(eventClass).filter(new SetterMethodFilter()).filter(new MethodPropertyFilter(ReflectionUtils.getPropertyName(getter.getName())));
+                        final CollectionDSL.Wrapper<Method> setters = withMethods(eventClass).filter(new SetterMethodFilter()).filter(new MethodPropertyFilter(ReflectionUtils.getPropertyName(getter.getName())));
                         if (setters.count() == 0) {
                             return;
                         }
