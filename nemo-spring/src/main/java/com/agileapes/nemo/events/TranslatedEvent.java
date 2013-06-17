@@ -13,7 +13,7 @@ public abstract class TranslatedEvent extends ApplicationEvent {
      *
      * @param source the component that published the event (never {@code null})
      */
-    public TranslatedEvent(SpringEventTranslator source) {
+    public TranslatedEvent(Object source) {
         super(source);
     }
 

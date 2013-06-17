@@ -1,5 +1,6 @@
-package com.agileapes.nemo.events;
+package com.agileapes.nemo.events.translated;
 
+import com.agileapes.nemo.events.TranslatedEvent;
 import com.agileapes.nemo.exec.ExecutorContext;
 
 /**
@@ -16,7 +17,7 @@ public class ExecutionErrorEvent extends TranslatedEvent {
      *
      * @param source the component that published the event (never {@code null})
      */
-    public ExecutionErrorEvent(SpringEventTranslator source) {
+    public ExecutionErrorEvent(Object source) {
         super(source);
     }
 

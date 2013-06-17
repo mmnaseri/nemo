@@ -1,5 +1,6 @@
-package com.agileapes.nemo.events;
+package com.agileapes.nemo.events.translated;
 
+import com.agileapes.nemo.events.TranslatedEvent;
 import com.agileapes.nemo.exec.Execution;
 import com.agileapes.nemo.exec.Executor;
 
@@ -17,7 +18,7 @@ public class PerformingExecutionEvent extends TranslatedEvent {
      *
      * @param source the component that published the event (never {@code null})
      */
-    public PerformingExecutionEvent(SpringEventTranslator source) {
+    public PerformingExecutionEvent(Object source) {
         super(source);
     }
 

@@ -1,29 +1,42 @@
 package com.agileapes.nemo.events;
 
-import com.agileapes.nemo.contract.Callback;
+import com.agileapes.nemo.contract.Filter;
+import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
+import com.agileapes.nemo.error.AggregatedException;
 import com.agileapes.nemo.event.Event;
 import com.agileapes.nemo.event.EventListener;
-import com.agileapes.nemo.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.FatalBeanException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.core.Ordered;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
-import static com.agileapes.nemo.util.ReflectionUtils.withMethods;
+import static com.agileapes.nemo.util.CollectionDSL.with;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 3:58 PM)
  */
-public class SpringEventTranslator implements EventListener<Event>, ApplicationContextAware {
+public class SpringEventTranslator extends AbstractThreadSafeContext<TranslationScheme> implements EventListener<Event>, ApplicationContextAware, Ordered {
 
     private static final Log log = LogFactory.getLog(SpringEventTranslator.class);
     private ApplicationContext applicationContext;
+
+    @Override
+    protected Class<TranslationScheme> getType() {
+        return TranslationScheme.class;
+    }
+
+    @Override
+    public int getOrder() {
+        return HIGHEST_PRECEDENCE;
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -32,48 +45,32 @@ public class SpringEventTranslator implements EventListener<Event>, ApplicationC
 
     @Override
     public void onApplicationEvent(final Event event) {
-        String canonicalName = getClass().getCanonicalName();
-        canonicalName = canonicalName.substring(0, canonicalName.lastIndexOf(".") + 1) + event.getClass().getSimpleName();
-        final Class eventClass;
-        try {
-            eventClass = ClassUtils.forName(canonicalName, applicationContext.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            log.error("Unsupported Spring event: " + event.getClass().getSimpleName());
-            return;
-        }
-        final Constructor constructor;
-        try {
-            //noinspection unchecked
-            constructor = eventClass.getConstructor(SpringEventTranslator.class);
-        } catch (Throwable e) {
-            log.error("Unknown translation scheme for event: " + event.getClass().getSimpleName(), e);
-            return;
-        }
-        final ApplicationEvent translated;
-        try {
-            translated = (ApplicationEvent) constructor.newInstance(this);
-        } catch (Throwable e) {
-            log.error("Failed to instantiated translation for " + event.getClass().getSimpleName(), e);
-            return;
-        }
-        withMethods(event.getClass())
-                .filter(new GetterMethodFilter())
-                .each(new Callback<Method>() {
+        final List<TranslationScheme> list = with(getOrderedBeans())
+                .filter(new Filter<TranslationScheme>() {
                     @Override
-                    public void perform(Method getter) {
-                        final CollectionDSL.Wrapper<Method> setters = withMethods(eventClass).filter(new SetterMethodFilter()).filter(new MethodPropertyFilter(ReflectionUtils.getPropertyName(getter.getName())));
-                        if (setters.count() == 0) {
-                            return;
-                        }
-                        final Method setter = setters.first();
-                        try {
-                            setter.invoke(translated, getter.invoke(event));
-                        } catch (Throwable e) {
-                            log.error("Failed to convert event data for field " + ReflectionUtils.getPropertyName(getter.getName()), e);
-                        }
+                    public boolean accepts(TranslationScheme item) {
+                        return item.accepts(event);
                     }
-                });
-        applicationContext.publishEvent(translated);
+                }).list();
+        if (list.isEmpty()) {
+             log.error("No translation scheme found for event " + event.getClass().getCanonicalName());
+            return;
+        }
+        log.info("Found " + list.size() + " ways to translate event");
+        final List<Throwable> errors = new ArrayList<Throwable>();
+        ApplicationEvent applicationEvent = null;
+        for (TranslationScheme scheme : list) {
+            try {
+                applicationEvent = scheme.translate(event);
+                break;
+            } catch (Throwable e) {
+                errors.add(e);
+            }
+        }
+        if (applicationEvent == null) {
+            throw new FatalBeanException("Failed to translated event: " + event.getClass().getCanonicalName(), new AggregatedException(errors));
+        }
+        applicationContext.publishEvent(applicationEvent);
     }
 
 }

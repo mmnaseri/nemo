@@ -11,6 +11,9 @@ import com.agileapes.nemo.contract.impl.TypedActionDiscoverer;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.events.SpringEventTranslator;
+import com.agileapes.nemo.events.TranslationScheme;
+import com.agileapes.nemo.events.impl.BuiltInTranslationScheme;
+import com.agileapes.nemo.events.impl.GenericTranslationScheme;
 import com.agileapes.nemo.value.ValueReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +47,8 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
         discoverers.add(new AnnotatedActionDiscoverer(Disassembler.class));
         discoverers.add(new AnnotatedActionDiscoverer(Command.class));
         translator = new SpringEventTranslator();
+        translator.register("builtInTranslator", new BuiltInTranslationScheme());
+        translator.register("genericTranslator", new GenericTranslationScheme());
         addEventListener(translator);
     }
 
@@ -53,6 +58,7 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
         log.info("Looking for ways to discover new actions: ");
         discoverers.addAll(beanFactory.getBeansOfType(ActionDiscoverer.class, false, true).values());
         final Set<Object> springContextItems = new HashSet<Object>();
+        handleEventTranslationSchemes(beanFactory);
         springContextItems.addAll(handleStrategies(beanFactory));
         springContextItems.addAll(handleValueReaders(beanFactory));
         springContextItems.addAll(handleActions(beanFactory));
@@ -91,6 +97,17 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
                     second = first;
                 }
                 getMap().put(entry.getKey(), second);
+            }
+        }
+    }
+
+    private void handleEventTranslationSchemes(ConfigurableListableBeanFactory beanFactory) {
+        final Map<String, TranslationScheme> beansOfType = beanFactory.getBeansOfType(TranslationScheme.class, false, true);
+        for (Map.Entry<String, TranslationScheme> entry : beansOfType.entrySet()) {
+            try {
+                translator.register(entry.getKey(), entry.getValue());
+            } catch (RegistryException e) {
+                throw new FatalBeanException("Failed to register translation scheme", e);
             }
         }
     }

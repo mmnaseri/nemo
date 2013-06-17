@@ -1,6 +1,6 @@
 package com.agileapes.nemo.demo;
 
-import com.agileapes.nemo.events.ExecutionStartedEvent;
+import com.agileapes.nemo.events.translated.ExecutionStartedEvent;
 import org.springframework.context.ApplicationListener;
 
 /**

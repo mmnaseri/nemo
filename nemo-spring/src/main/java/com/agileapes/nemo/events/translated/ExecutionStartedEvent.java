@@ -1,5 +1,6 @@
-package com.agileapes.nemo.events;
+package com.agileapes.nemo.events.translated;
 
+import com.agileapes.nemo.events.TranslatedEvent;
 import com.agileapes.nemo.exec.ExecutorContext;
 
 import java.io.PrintStream;
@@ -14,7 +15,7 @@ public class ExecutionStartedEvent extends TranslatedEvent {
     private String[] arguments;
     private PrintStream output;
 
-    public ExecutionStartedEvent(SpringEventTranslator source) {
+    public ExecutionStartedEvent(Object source) {
         super(source);
     }
 
