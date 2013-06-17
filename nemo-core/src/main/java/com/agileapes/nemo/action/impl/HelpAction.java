@@ -10,10 +10,17 @@ import com.agileapes.nemo.error.NoSuchOptionException;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.CollectionDSL;
 import com.agileapes.nemo.util.ReflectionUtils;
+import com.agileapes.nemo.util.output.Grid;
+import com.agileapes.nemo.util.output.TextWrapper;
 
 import java.util.*;
 
 /**
+ * This action is design as a built-in action that will provide thorough help messages for any given target/option
+ * combination.
+ *
+ * This
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/13/13, 11:58 AM)
  */
@@ -56,8 +63,9 @@ public class HelpAction extends Action implements ActionContextAware {
         if (ALL.equals(target) && ALL.equals(option)) {
             //we need help for all the available actions
             final List<String> names = CollectionDSL.sorted(actionContext.getActions().keySet());
-            output.println("Available actions:");
-            output.println("------------------");
+            final Grid grid = new Grid(" c3 * w60");
+            grid.add("[x]", "Name", "Description");
+            grid.addLine();
             int length = 0;
             for (String name : names) {
                 final SmartAction action = (SmartAction) actionContext.get(name);
@@ -71,38 +79,10 @@ public class HelpAction extends Action implements ActionContextAware {
                 if (action.isInternal()) {
                     continue;
                 }
-                if (action.isDefaultAction()) {
-                    output.print(" * ");
-                } else {
-                    output.print("   ");
-                }
-                output.print(name);
                 final Properties metadata = action.getMetadata();
-                if (metadata.containsKey(HELP)) {
-                    for (int i = 0; i < length - name.length(); i ++) {
-                        output.print(" ");
-                    }
-                    int indent = length + 3;
-                    String message = (String) ((Map<String, Object>) metadata.get(HELP)).get("value");
-                    message = message.trim();
-                    while (message.length() > 65) {
-                        int i = 65;
-                        while (!Character.isWhitespace(message.charAt(i))) {
-                            i --;
-                        }
-                        output.print(message.substring(0, i));
-                        message = message.substring(i).trim();
-                        if (!message.isEmpty()) {
-                            output.println();
-                            for (int j = 0; j < indent; j ++) {
-                                output.print(" ");
-                            }
-                        }
-                    }
-                    output.print(message);
-                }
-                output.println();
+                grid.add(action.isDefaultAction() ? "*" : "", name, metadata.containsKey(HELP) ? ((String)((Map<String, Object>) metadata.get(HELP)).get("value")) : "");
             }
+            output.println(grid.draw());
         } else if (ALL.equals(target) && !ALL.equals(option)) {
             //we want help for an option of the default action
             target = actionContext.getDefaultAction().getName();

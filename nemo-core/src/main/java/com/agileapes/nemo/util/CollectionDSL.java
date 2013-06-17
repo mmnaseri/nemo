@@ -66,6 +66,14 @@ public abstract class CollectionDSL {
             return items.get(items.size() - 1);
         }
 
+        public <K> Map<K, I> key(Mapper<I, K> mapper) {
+            final HashMap<K, I> map = new HashMap<K, I>();
+            for (I item : items) {
+                map.put(mapper.map(item), item);
+            }
+            return map;
+        }
+
         public int count() {
             return items.size();
         }

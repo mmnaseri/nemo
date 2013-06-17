@@ -10,6 +10,7 @@ import com.agileapes.nemo.contract.impl.SpringBeanProcessor;
 import com.agileapes.nemo.contract.impl.TypedActionDiscoverer;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.error.RegistryException;
+import com.agileapes.nemo.event.EventListener;
 import com.agileapes.nemo.events.SpringEventTranslator;
 import com.agileapes.nemo.events.TranslationScheme;
 import com.agileapes.nemo.events.impl.BuiltInTranslationScheme;
@@ -59,6 +60,7 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
         discoverers.addAll(beanFactory.getBeansOfType(ActionDiscoverer.class, false, true).values());
         final Set<Object> springContextItems = new HashSet<Object>();
         handleEventTranslationSchemes(beanFactory);
+        handleEventListeners(beanFactory);
         springContextItems.addAll(handleStrategies(beanFactory));
         springContextItems.addAll(handleValueReaders(beanFactory));
         springContextItems.addAll(handleActions(beanFactory));
@@ -97,6 +99,17 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
                     second = first;
                 }
                 getMap().put(entry.getKey(), second);
+            }
+        }
+    }
+
+    private void handleEventListeners(ConfigurableListableBeanFactory beanFactory) {
+        final Map<String, EventListener> beansOfType = beanFactory.getBeansOfType(EventListener.class, false, true);
+        for (Map.Entry<String, EventListener> entry : beansOfType.entrySet()) {
+            try {
+                addEventListener(entry.getValue());
+            } catch (RegistryException e) {
+                throw new FatalBeanException("Failed to add event listener", e);
             }
         }
     }

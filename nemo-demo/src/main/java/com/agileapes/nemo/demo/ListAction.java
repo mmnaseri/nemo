@@ -18,6 +18,7 @@ package com.agileapes.nemo.demo;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
+import com.agileapes.nemo.util.output.Grid;
 
 import java.io.File;
 
@@ -41,13 +42,21 @@ public class ListAction extends Action {
         }
         int i = 0;
         output.println("There are " + files.length + " files under " + current.getAbsolutePath());
+        output.println();
+        final Grid grid = new Grid(numbers ? "r5 l6 *" : "l6 *");
+        if (numbers) {
+            grid.add("#", "Size", "Name");
+        } else {
+            grid.add("Size", "Name");
+        }
+        grid.addLine();
         for (File file : files) {
             if (numbers) {
-                output.print((++i) + "\t");
+                grid.add(Integer.toString(++i), Long.toString(file.length()), file.getName());
+            } else {
+                grid.add(Long.toString(file.length()), file.getName());
             }
-            output.print(file.length());
-            output.print("\t ");
-            output.println(file.getName());
         }
+        output.println(grid.draw());
     }
 }

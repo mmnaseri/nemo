@@ -55,6 +55,7 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> implement
     private final Date startupDate;
     private final DefaultEventPublisher eventPublisher;
     private final static Log log = LogFactory.getLog(ExecutorContext.class);
+    private PrintStream output;
 
     public ExecutorContext() {
         log.info("Starting executor context ...");
@@ -185,6 +186,7 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> implement
     public void execute(PrintStream out, String... args) throws Exception {
         log.info("Starting execution ...");
         log.debug("Provided arguments are: " + Arrays.toString(args));
+        this.output = out;
         final ExecutionStartedEvent event = publishEvent(new ExecutionStartedEvent(this, args, out));
         args = event.getArguments();
         out = event.getOutput();
@@ -203,4 +205,7 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> implement
         }
     }
 
+    public PrintStream getOutput() {
+        return output;
+    }
 }
