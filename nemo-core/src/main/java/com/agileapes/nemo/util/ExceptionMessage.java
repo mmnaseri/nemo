@@ -1,6 +1,9 @@
 package com.agileapes.nemo.util;
 
 /**
+ * This is a class that will provide user-friendly messages extracted from all exceptions and
+ * their causes
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/13/13, 12:08 PM)
  */

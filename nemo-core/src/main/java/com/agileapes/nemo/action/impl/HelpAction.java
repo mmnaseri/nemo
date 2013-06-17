@@ -19,8 +19,6 @@ import java.util.*;
  * This action is design as a built-in action that will provide thorough help messages for any given target/option
  * combination.
  *
- * This
- *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/13/13, 11:58 AM)
  */

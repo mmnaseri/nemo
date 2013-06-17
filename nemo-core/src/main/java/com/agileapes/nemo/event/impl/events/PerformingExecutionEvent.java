@@ -5,6 +5,9 @@ import com.agileapes.nemo.exec.Execution;
 import com.agileapes.nemo.exec.Executor;
 
 /**
+ * This event occurs whenever a call is made to {@link Executor#perform(com.agileapes.nemo.exec.Execution)}
+ * to signify that an execution is being performed.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 3:54 PM)
  */

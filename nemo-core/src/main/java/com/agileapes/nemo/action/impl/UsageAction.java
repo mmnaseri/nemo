@@ -17,6 +17,12 @@ import java.util.*;
 import static com.agileapes.nemo.util.CollectionDSL.with;
 
 /**
+ * The usage action, once invoked from the command line will outline the usages of the application by first
+ * providing a general view of available actions, and then providing available options to each action.
+ *
+ * For instance, invoking {@code usage usage} will print out {@code %APPLICATION% usage <target>} which
+ * is a correct syntax for invoking the <em>usage</em> action.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/13/13, 1:46 PM)
  */

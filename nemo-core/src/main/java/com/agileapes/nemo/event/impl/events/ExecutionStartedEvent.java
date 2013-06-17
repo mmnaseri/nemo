@@ -6,6 +6,10 @@ import com.agileapes.nemo.exec.ExecutorContext;
 import java.io.PrintStream;
 
 /**
+ * This event occurs right before an execution is being run by the application.
+ * Notice that this happens through {@link ExecutorContext#execute(java.io.PrintStream, String...)}
+ * and not {@link com.agileapes.nemo.exec.Executor#execute(java.io.PrintStream, String...)}
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 3:26 PM)
  */

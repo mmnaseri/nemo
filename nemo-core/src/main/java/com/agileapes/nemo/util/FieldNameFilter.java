@@ -5,6 +5,8 @@ import com.agileapes.nemo.contract.Filter;
 import java.lang.reflect.Field;
 
 /**
+ * This filter will accept all fields whose name matches the one specified
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 7:28 PM)
  */

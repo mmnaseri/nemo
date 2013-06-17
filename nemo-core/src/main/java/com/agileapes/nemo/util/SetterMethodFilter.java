@@ -6,6 +6,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
+ * This filter will accept any method that is a property setter.
+ * This only means that it will check for the usual conventions, and does not mean that
+ * it will check to see it actually is wired to a property.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 7:22 PM)
  */

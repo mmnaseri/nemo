@@ -14,6 +14,17 @@ import static com.agileapes.nemo.util.CollectionDSL.sorted;
 import static com.agileapes.nemo.util.CollectionDSL.with;
 
 /**
+ * This class is an event listener which is capable of determining whether or not a certain
+ * action name is a typographical error.
+ *
+ * This event will then try to intercept the error, correct it, and if it falls outside the
+ * threshold of accepted closeness between the intended and the actual action names, suggest
+ * an action names that is close to the one given by the user.
+ *
+ * This listener is not included by default in the context, and in case the developer wishes
+ * to provide such a facility to its users, it can be added to the context as an event listener
+ * via {@link com.agileapes.nemo.exec.ExecutorContext#addEventListener(com.agileapes.nemo.event.EventListener)}
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/17/13, 12:53 PM)
  */

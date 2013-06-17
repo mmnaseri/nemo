@@ -11,6 +11,41 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * This is an asset for the {@link CommandStatementDisassembleStrategy} strategy. This parser is supposed to read
+ * the definition of an action from the given @Command annotation (or as plain text, otherwise), and provide the
+ * descriptions determined from this input.
+ *
+ * The input must follow these guidelines:
+ *
+ * <ul>
+ *     <li>It can be the name of an option, in which case it will be assumed as an indexed option, whose
+ *     corresponding field name has been given here. For instance, should the command description be
+ *     {@code verbose}, it would mean that the action can be invoked by:
+ *     {@code %APPLICATION% action <verbose>} or {@code %APPLICATION% action --verbose <value>}</li>
+ *     <li>It can be the option value format for the given option. Aliases can be specified here, also.
+ *     The syntax for this definition is: {@code --name|alias} where name must be longer than one character.
+ *     Specifying an alias is not mandatory and the order in which aliases and names are specified is not
+ *     obligatory either. Should you enter {@code --verbose|v} it would mean that this action can be invoked
+ *     in one of these ways:
+ *     {@code %APPLICATION% action --verbose <value>} or {@code %APPLICATION% action -v <value>}</li>
+ *     <li>Optional portions of the definition must be encased in square brackets.</li>
+ * </ul>
+ *
+ * To exemplify, let us assume that we want to allow users to invoke the <strong>read</strong> action
+ * which takes in a file name, and can optionally display line numbers.
+ *
+ * The syntax for such a command would be:
+ *
+ * <code>file [--n|numbers]</code>
+ *
+ * Which would indicate that the line number property is optional, while the file option is mandatory
+ * and can be called with its index.
+ *
+ * To see how option types are determined and how their values are accessed, please refer to
+ * {@link CommandStatementDisassembleStrategy}
+ *
+ * @see CommandStatementDisassembleStrategy
+ * @see Command
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 6:14 PM)
  */

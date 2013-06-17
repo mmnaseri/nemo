@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * This class will help convert an annotation an all its properties into maps.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/13/13, 12:24 PM)
  */
@@ -34,7 +36,10 @@ public class AnnotationPropertyBuilder {
                     @Override
                     public void perform(Method item) {
                         try {
-                            final Object value = item.invoke(annotation);
+                            Object value = item.invoke(annotation);
+                            if (value instanceof Annotation) {
+                                value = new AnnotationPropertyBuilder((Annotation) value).getValues();
+                            }
                             values.put(item.getName(), value);
                         } catch (Throwable ignored) {
                         }

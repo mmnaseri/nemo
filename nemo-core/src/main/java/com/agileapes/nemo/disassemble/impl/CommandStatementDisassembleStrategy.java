@@ -23,6 +23,27 @@ import static com.agileapes.nemo.util.ReflectionUtils.withFields;
 import static com.agileapes.nemo.util.ReflectionUtils.withMethods;
 
 /**
+ * This strategy will look at all actions extending {@link Action} which are annotated with
+ * {@link Command}. The @Command annotation is essentially an easier way for allowing developers to
+ * indicate the options for each action. The syntax of the command is explained in the documentation for
+ * {@link CommandParser}.
+ *
+ * Whenever an option is being described by this strategy, it first looks for accessor methods throughout
+ * the hierarchy for that option. This means that if there is an option with the name 'verbose', to read its
+ * value, the strategy will first look up method 'getVerbose' in a place in the hierarchy and, should it fail
+ * to locate such a method, it will proceed to look for a field with name 'verbose'. This is to honor encapsulation
+ * as devised by Java language designers.
+ *
+ * The same process is repeated for writing to the property, only this time a setter method is looked up.
+ *
+ * Do note that this means accessor methods always have a priority over fields, regardless of the depths to which
+ * we would have to travel to capture them.
+ *
+ * A common pitfall is for you to name a property as <strong>name</strong>, which has a getter method higher
+ * along the hierarchy, {@link Action#getName()}, whcih means that should you forget to provide your own
+ * getter and setter for this property, the one from the {@link Action} will be used, which might not be
+ * what you intended originally.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 4:53 PM)
  */

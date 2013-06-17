@@ -5,6 +5,9 @@ import org.apache.commons.lang.StringUtils;
 import java.io.PrintStream;
 
 /**
+ * This class helps with hard-wrapping text so that it can be printed in an environment with
+ * limited display width.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/17/13, 4:10 PM)
  */

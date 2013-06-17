@@ -4,6 +4,9 @@ import com.agileapes.nemo.event.Event;
 import com.agileapes.nemo.exec.ExecutorContext;
 
 /**
+ * This event will occur once there has been an error while executing the application through the
+ * {@link ExecutorContext}
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 3:49 PM)
  */

@@ -14,6 +14,8 @@ import java.util.regex.Pattern;
 import static com.agileapes.nemo.util.CollectionDSL.with;
 
 /**
+ * This is a visual asset that will facilitate the display of tabular information.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/17/13, 4:13 PM)
  */
