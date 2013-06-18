@@ -1,29 +1,23 @@
 package com.agileapes.nemo.demo;
 
-import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Command;
 import com.agileapes.nemo.api.Help;
+
+import java.io.PrintStream;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 5:29 PM)
  */
-@Command("name")
+@Command("action name")
 @Help("Will greet the runner")
-public class HelloAction extends Action {
+public class HelloAction {
 
-    private String name = "Mickey";
+    private PrintStream output;
 
     @Help("Tells the application whom to say hello to")
-    public String getName() {
-        return name;
-    }
+    private String name = "Mickey";
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
     public void execute() throws Exception {
         output.println("Hello, " + name);
     }

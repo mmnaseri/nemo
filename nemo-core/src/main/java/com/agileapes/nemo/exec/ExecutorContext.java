@@ -97,6 +97,15 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> implement
                     return bean;
                 }
             });
+            addBeanProcessor(new AbstractBeanProcessor() {
+                @Override
+                public Object postProcessBeforeRegistration(Object bean, String beanName) throws RegistryException {
+                    if (bean instanceof ExecutorAware) {
+                        ((ExecutorAware) bean).setExecutor(executor);
+                    }
+                    return bean;
+                }
+            });
         } catch (RegistryException ignored) {
         }
         startupDate = new Date();

@@ -78,6 +78,9 @@ public abstract class CollectionDSL {
             return items.size();
         }
 
+        public boolean isEmpty() {
+            return count() == 0;
+        }
     }
 
     public static <I> Wrapper<I> with(I ... items) {

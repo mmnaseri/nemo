@@ -19,13 +19,13 @@ public class CommandParserTest {
 
     @Test
     public void testEmptyString() throws Exception {
-        final List<OptionDescriptor> options = parse("");
+        final List<OptionDescriptor> options = parse("action");
         Assert.assertTrue(options.isEmpty());
     }
 
     @Test
     public void testIndexed() throws Exception {
-        final List<OptionDescriptor> descriptors = parse("name");
+        final List<OptionDescriptor> descriptors = parse("action name");
         Assert.assertFalse(descriptors.isEmpty());
         Assert.assertEquals(descriptors.size(), 1);
         final OptionDescriptor descriptor = descriptors.iterator().next();
@@ -41,7 +41,7 @@ public class CommandParserTest {
 
     @Test
     public void testNamed() throws Exception {
-        final List<OptionDescriptor> descriptors = parse("--name");
+        final List<OptionDescriptor> descriptors = parse("action --name");
         Assert.assertFalse(descriptors.isEmpty());
         Assert.assertEquals(descriptors.size(), 1);
         final OptionDescriptor descriptor = descriptors.iterator().next();
@@ -56,7 +56,7 @@ public class CommandParserTest {
 
     @Test
     public void testAliased() throws Exception {
-        final List<OptionDescriptor> descriptors = parse("--n|name");
+        final List<OptionDescriptor> descriptors = parse("action --n|name");
         Assert.assertFalse(descriptors.isEmpty());
         Assert.assertEquals(descriptors.size(), 1);
         final OptionDescriptor descriptor = descriptors.iterator().next();
@@ -72,7 +72,7 @@ public class CommandParserTest {
 
     @Test
     public void testComplexCommand() throws Exception {
-        final List<OptionDescriptor> descriptors = parse("[--x|list --read] --options|o first [second]");
+        final List<OptionDescriptor> descriptors = parse("action [--x|list --read] --options|o first [second]");
         Assert.assertNotNull(descriptors);
         Assert.assertFalse(descriptors.isEmpty());
         Assert.assertEquals(descriptors.size(), 5);
@@ -114,42 +114,42 @@ public class CommandParserTest {
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*Missing.*]")
     public void testBracketLeftOpen() throws Exception {
-        parse("[test --name] [hello");
+        parse("action [test --name] [hello");
     }
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*Invalid.*]")
     public void testBracketNotOpened() throws Exception {
-        parse("test --name]");
+        parse("action test --name]");
     }
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*Invalid.*\\[")
     public void testBracketOpenedTwice() throws Exception {
-        parse("[test [--name]]");
+        parse("action [test [--name]]");
     }
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*Expected option name missing")
     public void testEmptyOption() throws Exception {
-        parse("--");
+        parse("action --");
     }
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*Options cannot have more than one alias")
     public void testMoreThanOneAlias() throws Exception {
-        parse("--a|b|c");
+        parse("action --a|b|c");
     }
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*at least two characters long")
     public void testNoNameForOption() throws Exception {
-        parse("--a");
+        parse("action --a");
     }
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*Option names and aliases must not be empty")
     public void testEmptyAlias() throws Exception {
-        parse("--|name");
+        parse("action --|name");
     }
 
     @Test(expectedExceptions = CommandSyntaxError.class, expectedExceptionsMessageRegExp = ".*Option cannot be without a name")
     public void testTwoAliases() throws Exception {
-        parse("--a|b");
+        parse("action --a|b");
     }
 
 }

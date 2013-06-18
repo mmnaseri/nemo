@@ -18,6 +18,12 @@ import java.util.Set;
  * The input must follow these guidelines:
  *
  * <ul>
+ *     <li>The input must start with the word {@code action}, optionally preceded by one of these modifiers:
+ *      <ul>
+ *          <li>{@code #}; marks this action is the default action</li>
+ *          <li>{@code !}; marks this action as an internal action</li>
+ *      </ul>
+ *     </li>
  *     <li>It can be the name of an option, in which case it will be assumed as an indexed option, whose
  *     corresponding field name has been given here. For instance, should the command description be
  *     {@code verbose}, it would mean that the action can be invoked by:
@@ -54,6 +60,8 @@ public class CommandParser {
     private List<OptionDescriptor> options = new ArrayList<OptionDescriptor>();
     private String command;
     private int position;
+    private boolean internal;
+    private boolean defaultAction;
 
     public CommandParser(Command command) throws CommandSyntaxError {
         this(command.value());
@@ -68,6 +76,14 @@ public class CommandParser {
         return options;
     }
 
+    public boolean isInternal() {
+        return internal;
+    }
+
+    public boolean isDefaultAction() {
+        return defaultAction;
+    }
+
     private void parse() throws CommandSyntaxError {
         position = 0;
         skip();
@@ -75,6 +91,19 @@ public class CommandParser {
         String name;
         Character alias;
         Integer index = 0;
+        command = command.trim();
+        if (command.charAt(0) == '#') {
+            position ++;
+            defaultAction = true;
+        } else if (command.charAt(0) == '!') {
+            position ++;
+            internal = true;
+        }
+        final String read = read();
+        if (!read.equals("action")) {
+            throw new CommandSyntaxError(position, "Expected token 'action' missing");
+        }
+        skip();
         while (position < command.length()) {
             if (command.charAt(position) == '[') {
                 if (optional) {

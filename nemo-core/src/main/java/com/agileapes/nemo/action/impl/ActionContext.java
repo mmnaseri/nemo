@@ -61,7 +61,7 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
                         throw new ActionDefinitionException("Actions cannot be both internal and marked as default: " + action.getName());
                     }
                     if (defaultAction != null) {
-                        throw new ActionDefinitionException("Action " + action.getName() + " cannot be marked as default, because action " + defaultAction.getName() + " has already been set as the default action");
+                        throw new ActionDefinitionException("Action <" + action.getName() + "> cannot be marked as default, because action <" + defaultAction.getName() + "> has already been set as the default action");
                     }
                     log.info("Discovered the default action: " + beanName);
                     defaultAction = action;

@@ -2,10 +2,12 @@ package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Command;
+import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.contract.Callback;
 import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.error.CommandSyntaxError;
 import com.agileapes.nemo.error.OptionDefinitionException;
+import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.*;
 
@@ -18,13 +20,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.agileapes.nemo.util.ReflectionUtils.withFields;
 import static com.agileapes.nemo.util.ReflectionUtils.withMethods;
 
 /**
- * This strategy will look at all actions extending {@link Action} which are annotated with
- * {@link Command}. The @Command annotation is essentially an easier way for allowing developers to
+ * This strategy will look at all actions which are annotated with {@link Command}. The @Command
+ * annotation is essentially an easier way for allowing developers to
  * indicate the options for each action. The syntax of the command is explained in the documentation for
  * {@link CommandParser}.
  *
@@ -39,22 +42,34 @@ import static com.agileapes.nemo.util.ReflectionUtils.withMethods;
  * Do note that this means accessor methods always have a priority over fields, regardless of the depths to which
  * we would have to travel to capture them.
  *
- * A common pitfall is for you to name a property as <strong>name</strong>, which has a getter method higher
- * along the hierarchy, {@link Action#getName()}, whcih means that should you forget to provide your own
+ * A common pitfall is for you to name a property which has a getter method higher
+ * along the hierarchy, e.g. {@link Action#getName()}, which means that should you forget to provide your own
  * getter and setter for this property, the one from the {@link Action} will be used, which might not be
  * what you intended originally.
  *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 4:53 PM)
  */
-public class CommandStatementDisassembleStrategy extends AbstractCachingDisassembleStrategy<Action, CommandStatementDisassembleStrategy.AccessibleFieldOptionDescriptor> {
+public class CommandStatementDisassembleStrategy extends AbstractCachingDisassembleStrategy<Object, CommandStatementDisassembleStrategy.AccessibleFieldOptionDescriptor> {
+
+    private Object defaultAction = null;
+    private Set<Object> internalActions = new CopyOnWriteArraySet<Object>();
 
     @Override
-    protected Set<AccessibleFieldOptionDescriptor> describe(Action action) throws OptionDefinitionException {
+    protected Set<AccessibleFieldOptionDescriptor> describe(Object action) throws OptionDefinitionException {
         final HashSet<AccessibleFieldOptionDescriptor> descriptors = new HashSet<AccessibleFieldOptionDescriptor>();
         final List<OptionDescriptor> options;
         try {
-            options = new CommandParser(action.getClass().getAnnotation(Command.class)).getOptions();
+            final CommandParser parser = new CommandParser(action.getClass().getAnnotation(Command.class));
+            if (parser.isDefaultAction()) {
+                if (defaultAction != null) {
+                    throw new OptionDefinitionException("Cannot have more than one default action");
+                }
+                defaultAction = action;
+            } else if (parser.isInternal()) {
+                internalActions.add(action);
+            }
+            options = parser.getOptions();
         } catch (CommandSyntaxError e) {
             throw new OptionDefinitionException("Could not parse command definition", e);
         }
@@ -107,7 +122,7 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
     }
 
     @Override
-    protected void setOption(Action action, AccessibleFieldOptionDescriptor target, Object converted) {
+    protected void setOption(Object action, AccessibleFieldOptionDescriptor target, Object converted) {
         try {
             //noinspection unchecked
             target.getAccessor().set(action, converted);
@@ -116,27 +131,65 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
     }
 
     @Override
-    public boolean isDefaultAction(Action action) {
-        return action.isDefaultAction();
+    public boolean isDefaultAction(Object action) {
+        return action.equals(defaultAction);
     }
 
     @Override
-    public boolean isInternal(Action action) {
-        return action.isInternal();
+    public boolean isInternal(Object action) {
+        return internalActions.contains(action);
     }
 
     @Override
-    public void setOutput(Action action, PrintStream output) {
-        action.setOutput(output);
+    public void setOutput(final Object action, final PrintStream output) {
+        CollectionDSL.Wrapper<Field> fields = withFields(action.getClass()).filter(new FieldTypeFilter(PrintStream.class));
+        if (fields.count() > 1) {
+            fields = fields.filter(new FieldNameFilter("output"));
+        }
+        if (fields.count() > 0) {
+            final Field field = fields.first();
+            try {
+                field.setAccessible(true);
+                field.set(action, output);
+            } catch (IllegalAccessException ignored) {
+            }
+        } else {
+            withMethods(action.getClass())
+                    .filter(new SetterMethodFilter())
+                    .filter(new MethodArgumentsFilter(PrintStream.class))
+                    .filter(new MethodPropertyFilter("output"))
+                    .each(new Callback<Method>() {
+                        @Override
+                        public void perform(Method item) {
+                            try {
+                                item.invoke(action, output);
+                            } catch (Throwable e) {
+                                throw new WrappedError(e);
+                            }
+                        }
+                    });
+        }
     }
 
     @Override
-    public Executable getExecutable(Action action) {
-        return action;
+    public Executable getExecutable(final Object action) {
+        final CollectionDSL.Wrapper<Method> wrapper = withMethods(action.getClass())
+                .filter(new MethodNameFilter("execute"))
+                .filter(new MethodReturnTypeFilter(void.class))
+                .filter(new MethodArgumentsFilter());
+        if (wrapper.isEmpty()) {
+            throw new RuntimeException("Action has no executable method");
+        }
+        return new Executable() {
+            @Override
+            public void execute() throws Exception {
+                wrapper.first().invoke(action);
+            }
+        };
     }
 
     @Override
-    public Properties getMetadata(Action action) {
+    public Properties getMetadata(Object action) {
         final Properties properties = new Properties();
         CollectionDSL.with(action.getClass().getAnnotations())
                 .each(new Callback<Annotation>() {
@@ -150,7 +203,8 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
 
     @Override
     public boolean accepts(Object action) {
-        return action instanceof Action && action.getClass().isAnnotationPresent(Command.class);
+        return action.getClass().isAnnotationPresent(Command.class) &&
+                (!action.getClass().isAnnotationPresent(Disassembler.class) || action.getClass().getAnnotation(Disassembler.class).value().equals(CommandStatementDisassembleStrategy.class));
     }
 
     public static class AccessibleFieldOptionDescriptor<T> extends OptionDescriptor {
@@ -198,9 +252,12 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
         @SuppressWarnings("unchecked")
         public T get(Object target) throws IllegalAccessException, InvocationTargetException {
             if (delegate instanceof Field) {
-                return (T) ((Field) delegate).get(target);
+                final Field field = (Field) delegate;
+                field.setAccessible(true);
+                return (T) field.get(target);
             } else if (delegate instanceof Method) {
                 final Method method = (Method) delegate;
+                method.setAccessible(true);
                 return (T) method.invoke(target);
             }
             throw new IllegalStateException();

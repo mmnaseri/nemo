@@ -35,6 +35,39 @@ You can find out the exact metadata this class extracts by taking a look at the 
 
 At the moment, **this is the default strategy**.
 
+### CommandStatementDisassembleStrategy
+
+This strategy works by reading option definitions from the `com.agileapes.nemo.api.Command` annotation on the
+action class. The annotated class has to provide all of the options it aspires to have, as well as a method
+with this signature:
+
+    public void execute() [throws ...] {
+        //
+    }
+
+which will be called whenever the action is to be executed.
+
+The output for the application will be set by this strategy and is determined by the following process:
+
+  1. First, we look for a property named `output` with the type `java.io.PrintStream`
+  2. Should this fail, we will ommit the name and look for a candidate of the proper type
+  3. Should this also fail, we will look for the setter method for property name `output` of type
+  `java.io.PrintStream`
+  4. Should all of these fail, we let the developer get the output. This is possible by implementing
+  `com.agileapes.nemo.exec.ExecutorAware` and then accessing the `getOutput()` method from `Executor`
+
+The syntax of the command is described in the documentation for `com.agileapes.nemo.disassemble.impl.CommandParser`
+class.
+
+#### Shortcomings
+
+This method has two major shortcomings that might hinder the process of application development:
+
+  1. It makes the developer make decisions like whether the action should be internal or not at compile time
+  and not at runtime.
+  2. Options can either be indexed or aliased in this method. This means that an option can only be described in
+  at most two ways, at the same time; either via name/alias or via name/index
+
 ## Values
 
 Values are converted to their actual type from their textual representations. This is done
