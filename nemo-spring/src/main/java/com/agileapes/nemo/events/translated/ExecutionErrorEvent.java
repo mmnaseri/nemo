@@ -33,8 +33,4 @@ public class ExecutionErrorEvent extends TranslatedEvent {
         this.error = error;
     }
 
-    public void setExecutorContext(ExecutorContext executorContext) {
-        this.executorContext = executorContext;
-    }
-
 }

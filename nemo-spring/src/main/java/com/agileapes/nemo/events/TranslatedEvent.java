@@ -3,6 +3,10 @@ package com.agileapes.nemo.events;
 import org.springframework.context.ApplicationEvent;
 
 /**
+ * This is the root to any translated event as done by built-in translation schemes. Developers are encouraged
+ * to also extend this event when translating an event from nemo, so that the abstraction and the translation
+ * process becomes traceable.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 4:27 PM)
  */

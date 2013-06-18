@@ -8,6 +8,9 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import java.util.Map;
 
 /**
+ * This is intended as a discovery scheme that will turn up all actions that are descendants of a certain
+ * type
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 5:01 PM)
  */

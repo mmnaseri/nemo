@@ -9,6 +9,9 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
+ * This is a generically configurable action discoverer that will turn up all actions which have
+ * been annotated with the given annotation
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 5:09 PM)
  */

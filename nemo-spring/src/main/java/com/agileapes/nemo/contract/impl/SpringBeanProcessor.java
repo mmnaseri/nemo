@@ -7,6 +7,11 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 /**
+ * This is a translation wrapper which will take an instance of {@link BeanProcessor} from the nemo
+ * framework and turn it into an instance of {@link BeanPostProcessor} from the Spring framework, so that
+ * bean processors registered with the {@link com.agileapes.nemo.exec.ExecutorContext} can be applied to
+ * the rest of the application without having to re-implement them.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/12/13, 4:52 PM)
  */

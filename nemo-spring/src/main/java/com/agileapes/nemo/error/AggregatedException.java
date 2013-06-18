@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * This error class denotes a set of errors leading to a final decision that the normal process of
+ * progressively working through the instructions should be stopped, with all the errors collected in one
+ * place.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/17/13, 12:06 PM)
  */

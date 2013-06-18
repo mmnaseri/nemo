@@ -23,10 +23,6 @@ public class ExecutionStartedEvent extends TranslatedEvent {
         return executorContext;
     }
 
-    public void setExecutorContext(ExecutorContext executorContext) {
-        this.executorContext = executorContext;
-    }
-
     public String[] getArguments() {
         return arguments;
     }
@@ -37,10 +33,6 @@ public class ExecutionStartedEvent extends TranslatedEvent {
 
     public PrintStream getOutput() {
         return output;
-    }
-
-    public void setOutput(PrintStream output) {
-        this.output = output;
     }
 
 }

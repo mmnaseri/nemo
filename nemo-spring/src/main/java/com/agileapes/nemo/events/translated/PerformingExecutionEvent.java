@@ -26,10 +26,6 @@ public class PerformingExecutionEvent extends TranslatedEvent {
         return executor;
     }
 
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
-
     public Execution getExecution() {
         return execution;
     }
@@ -37,4 +33,5 @@ public class PerformingExecutionEvent extends TranslatedEvent {
     public void setExecution(Execution execution) {
         this.execution = execution;
     }
+
 }

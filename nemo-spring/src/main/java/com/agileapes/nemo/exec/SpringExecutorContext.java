@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * This extension to {@link ExecutorContext} allows users to instantiate all their nemo-related beans through
+ * Spring, without having to manually wire actions or anything else.
+ *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/12, 3:12)
  */

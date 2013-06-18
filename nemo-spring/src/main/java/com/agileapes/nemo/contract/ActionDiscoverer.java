@@ -20,6 +20,12 @@ public abstract class ActionDiscoverer implements Mapper<ConfigurableListableBea
         return map == null ? Collections.<String, Object>emptyMap() : Collections.unmodifiableMap(map);
     }
 
+    /**
+     * This method will be used to give the discoverer a chance to look seep through the bean
+     * factory and determine which beans should be uncovered.
+     * @param factory    the bean factory for the application
+     * @return a map of action names to action objects
+     */
     protected abstract Map<String, Object> discover(ConfigurableListableBeanFactory factory);
 
 }

@@ -9,6 +9,7 @@ public class WrappedError extends Error {
     private final Throwable wrappedError;
 
     public WrappedError(Throwable wrappedError) {
+        super(wrappedError);
         this.wrappedError = wrappedError;
     }
 

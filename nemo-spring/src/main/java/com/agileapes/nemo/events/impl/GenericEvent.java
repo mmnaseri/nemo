@@ -1,5 +1,6 @@
 package com.agileapes.nemo.events.impl;
 
+import com.agileapes.nemo.event.Event;
 import com.agileapes.nemo.events.TranslatedEvent;
 
 import java.util.Collections;
@@ -18,6 +19,7 @@ public class GenericEvent extends TranslatedEvent {
      * Create a new ApplicationEvent.
      *
      * @param source the component that published the event (never {@code null})
+     *
      */
     public GenericEvent(Object source) {
         super(source);
