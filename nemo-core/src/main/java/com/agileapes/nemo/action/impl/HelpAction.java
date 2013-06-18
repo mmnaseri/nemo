@@ -11,7 +11,6 @@ import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.CollectionDSL;
 import com.agileapes.nemo.util.ReflectionUtils;
 import com.agileapes.nemo.util.output.Grid;
-import com.agileapes.nemo.util.output.TextWrapper;
 
 import java.util.*;
 
@@ -63,7 +62,7 @@ public class HelpAction extends Action implements ActionContextAware {
             final List<String> names = CollectionDSL.sorted(actionContext.getActions().keySet());
             final Grid grid = new Grid(" c3 * w60");
             grid.add("[x]", "Name", "Description");
-            grid.addLine();
+            grid.line();
             int length = 0;
             for (String name : names) {
                 final SmartAction action = (SmartAction) actionContext.get(name);

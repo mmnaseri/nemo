@@ -14,19 +14,25 @@ import java.util.regex.Pattern;
 import static com.agileapes.nemo.util.CollectionDSL.with;
 
 /**
- * This is a visual asset that will facilitate the display of tabular information.
+ * This is a visual asset that will facilitate the display of tabular information. The grid must be instantiated
+ * by specifying a pattern denoting its row-by-row structure.
  *
+ * @see #Grid(String)
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/17/13, 4:13 PM)
  */
 public class Grid {
 
+    private static final Container LINE = new StaticContainer(" | ");
+    private static final Container SPACE = new StaticContainer("  ");
+
+    /**
+     * The container interface is used internally to abstract the process of drawing cells with different
+     * rendering schemes without having to write in their rendering code.
+     */
     private static interface Container {
         String draw(String input);
     }
-
-    private static final Container LINE = new StaticContainer(" | ");
-    private static final Container SPACE = new StaticContainer("   ");
 
     private static abstract class LimitedContainer implements Container {
 
@@ -125,16 +131,38 @@ public class Grid {
     private List<List<String>> rows = new ArrayList<List<String>>();
     private final int expected;
 
-    public Grid(Container[] containers) {
-        this.containers = containers;
-        this.expected = with(containers).filter(new Filter<Container>() {
-            @Override
-            public boolean accepts(Container item) {
-                return !(item instanceof StaticContainer);
-            }
-        }).count();
-    }
-
+    /**
+     * Here pattern is the definition of the table's rows.
+     * @param pattern    this parameter indicates how each row of the table should be organized.
+     *                   The parser will go over the pattern to discover the how each cell should be
+     *                   displayed.
+     *                   <ul>
+     *                   <li><strong><code>' '</code> (single space character)</strong> means a space of two between
+     *                   the two cells around it. It can be also used to add padding around cells. The padding size is
+     *                   constant (2) however.</li>
+     *                   <li><strong><code>|</code></strong> denotes a vertical line. Vertical lines are drawn with a padding
+     *                   of one on either side.</li>
+     *                   <li><strong><code>*</code></strong> means that the width of the cell is determined by the longest
+     *                   string in all the rows in this column. The width is not limited, so be careful to not use this
+     *                   option when displaying strings that are expected to be long, naturally, over display terminals
+     *                   with a limited width.</li>
+     *                   <li><strong><code>c\d+</code></strong> (the character 'c' followed by an integer number) means a cell of the
+     *                   specified width, with its content centered.</li>
+     *                   <li><strong><code>l\d+</code></strong> (the character 'l' followed by an integer number) means a cell of the
+     *                   indicated width, with its content aligned to the left</li>
+     *                   <li><strong><code>r\d+</code></strong> (the character 'r' followed by an integer number) means a cell of the
+     *                   indicated width, with its content aligned to the right</li>
+     *                   <li><strong><code>w\d+</code></strong> (the character 'w' followed by an integer number) means a cell of the
+     *                   specified width, with its content wrapped and justified. Note that using this option is the only
+     *                   way for having cells that span across multiple rows.</li>
+     *                   </ul>
+     *                   With the exception of the <code>w</code> modifier, all cells with a fixed width can only contain
+     *                   strings of a fixed width, with the rest of them truncated.
+     *                   You should build the grid by adding cells to it through {@link #add(String...)} and then calling to
+     *                   {@link #draw()} to render it into a String object that can be further manipulated, processed, or
+     *                   just printed to the output.
+     *                   You can use {@link #line()} to draw horizontal lines between cells or arbitrarily and whenever needed.
+     */
     public Grid(String pattern) {
         final List<Container> containers = new ArrayList<Container>();
         int i = 0;
@@ -179,6 +207,12 @@ public class Grid {
         }).count();
     }
 
+    /**
+     * The add method will add a row to the current position in the table. Each element of input will
+     * denote the contents of a single cell.
+     * @param input    the cells. Do note that the number of cells must match that of the cells specified
+     *                 when writing the pattern for the grid through {@link #Grid(String)}
+     */
     public void add(String ... input) {
         if (input.length != expected) {
             throw new IllegalArgumentException("Expected " + expected + " cells while got " + input.length);
@@ -186,10 +220,16 @@ public class Grid {
         rows.add(Arrays.asList(input));
     }
 
-    public void addLine() {
+    /**
+     * Will add a horizontal line to the current position in the table.
+     */
+    public void line() {
         rows.add(null);
     }
 
+    /**
+     * @return the lengths of the contents in each column
+     */
     private List<Integer> getLengths() {
         final List<Integer> lengths = new ArrayList<Integer>();
         int column = 0;
@@ -213,6 +253,12 @@ public class Grid {
         return lengths;
     }
 
+    /**
+     * Will replace each cell's content with a rendered version of how its contents should be
+     * @param lengths    the lengths of the columns
+     * @return the rendered grid, without support for row spanning
+     * @see #getLengths()
+     */
     private List<List<String>> processRows(List<Integer> lengths) {
         final List<List<String>> processed = new ArrayList<List<String>>();
         for (List<String> row : rows) {
@@ -242,9 +288,15 @@ public class Grid {
         return processed;
     }
 
-    public String draw() {
-        final List<Integer> lengths = getLengths();
-        final List<List<String>> processed = processRows(lengths);
+    /**
+     * Will add support for row spanning to a grid that has already been rendered.
+     * @param lengths      the lengths of each column
+     * @param processed    the processed table (rendered)
+     * @return the rendered table with support for row spanning
+     * @see #getLengths()
+     * @see #processRows(java.util.List)
+     */
+    private List<List<String>> addRowSpanning(List<Integer> lengths, List<List<String>> processed) {
         final List<List<String>> list = new ArrayList<List<String>>();
         for (List<String> row : processed) {
             if (row == null) {
@@ -252,7 +304,7 @@ public class Grid {
                 list.add(newRow);
                 for (int i = 0; i < lengths.size(); i++) {
                     if (containers[i] instanceof StaticContainer) {
-                        newRow.add("-+-");
+                        newRow.add(StringUtils.center("+", containers[i].draw(null).length()).replace(' ', '-'));
                     } else {
                         newRow.add(StringUtils.repeat("-", lengths.get(i)));
                     }
@@ -288,8 +340,20 @@ public class Grid {
                 list.add(newRow);
             }
         }
+        return list;
+    }
+
+    /**
+     * Will render the final grid as it is at the moment this method is called. Note that subsequent calls to this
+     * method will result in a freshly rendered String.
+     * @return the rendered grid
+     */
+    public String draw() {
+        final List<Integer> lengths = getLengths();
+        List<List<String>> processed;
+        processed = addRowSpanning(lengths, processRows(lengths));
         final StringBuilder builder = new StringBuilder();
-        for (List<String> row : list) {
+        for (List<String> row : processed) {
             for (String cell : row) {
                 builder.append(cell);
             }

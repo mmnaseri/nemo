@@ -49,7 +49,7 @@ public class ListAction extends Action {
         } else {
             grid.add("Size", "Name");
         }
-        grid.addLine();
+        grid.line();
         for (File file : files) {
             if (numbers) {
                 grid.add(Integer.toString(++i), Long.toString(file.length()), file.getName());
