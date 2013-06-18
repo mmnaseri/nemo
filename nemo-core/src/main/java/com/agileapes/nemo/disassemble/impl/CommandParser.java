@@ -94,10 +94,11 @@ public class CommandParser {
                 skip();
             } else if (command.substring(position).startsWith("--")) {
                 position += 2;
-                final String[] split = read().split("\\|");
-                if (split.length == 0) {
+                final String value = read();
+                if (value.isEmpty()) {
                     throw new CommandSyntaxError(position, "Expected option name missing");
                 }
+                final String[] split = value.split("\\|");
                 if (split.length > 2) {
                     throw new CommandSyntaxError(position, "Options cannot have more than one alias");
                 }
@@ -115,7 +116,7 @@ public class CommandParser {
                         throw new CommandSyntaxError(position, "Option aliases must be a single character");
                     }
                     if (split[0].length() == 1 && split[1].length() == 1) {
-                        throw new CommandSyntaxError(position, "Option aliases must be a single character");
+                        throw new CommandSyntaxError(position, "Option cannot be without a name");
                     }
                     if (split[0].length() == 1) {
                         alias = split[0].charAt(0);
@@ -154,13 +155,13 @@ public class CommandParser {
         }
     }
 
-    public void skip() {
+    private void skip() {
         while (position < command.length() && Character.isWhitespace(command.charAt(position))) {
             position ++;
         }
     }
 
-    public String read() {
+    private String read() {
         String value = "";
         while (position < command.length() && !Character.isWhitespace(command.charAt(position))
                 && !"-[]".contains(String.valueOf(command.charAt(position)))) {
