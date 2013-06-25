@@ -1,5 +1,6 @@
 package com.agileapes.nemo.exec;
 
+import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionContextAware;
 import com.agileapes.nemo.action.impl.ActionContext;
 import com.agileapes.nemo.contract.BeanProcessor;
@@ -10,6 +11,7 @@ import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.CommandStatementDisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
+import com.agileapes.nemo.error.FatalRegistryException;
 import com.agileapes.nemo.error.RegistryException;
 import com.agileapes.nemo.event.Event;
 import com.agileapes.nemo.event.EventListener;
@@ -22,6 +24,7 @@ import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderAware;
 import com.agileapes.nemo.value.ValueReaderContext;
 import com.agileapes.nemo.value.impl.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,6 +51,7 @@ import java.util.Date;
  */
 public class ExecutorContext extends AbstractThreadSafeContext<Object> implements EventPublisher {
 
+    public static final String ACTION_SUFFIX = "Action";
     private final DisassembleStrategyContext strategyContext;
     private final ValueReaderContext valueReaderContext;
     private final ActionContext actionRegistry;
@@ -56,6 +60,18 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> implement
     private final DefaultEventPublisher eventPublisher;
     private final static Log log = LogFactory.getLog(ExecutorContext.class);
     private PrintStream output;
+
+    public static ExecutorContext withActions(Class<? extends Action> defaultAction, Class... actions) throws RegistryException {
+        return new ExecutorContext(defaultAction, actions);
+    }
+
+    public ExecutorContext(Class<? extends Action> defaultAction, Class... actions) throws RegistryException {
+        this();
+        addDefaultAction(defaultAction);
+        for (Class action : actions) {
+            addAction(action);
+        }
+    }
 
     public ExecutorContext() {
         log.info("Starting executor context ...");
@@ -145,6 +161,51 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> implement
     public void addAction(String target, Object action) throws RegistryException {
         log.info("Registering action target: " + target);
         registerBean(actionRegistry, target, action);
+    }
+
+    public void addAction(String target, Class<?> action) throws RegistryException {
+        log.info("Instantiating action: " + action.getCanonicalName());
+        final Object instance;
+        try {
+            instance = action.newInstance();
+        } catch (Throwable e) {
+            throw new FatalRegistryException("Failed to instantiate action", e);
+        }
+        addAction(target, instance);
+    }
+
+    public void addDefaultAction(String target, Class<? extends Action> action) throws RegistryException {
+        log.info("Instantiating action: " + action.getCanonicalName());
+        final Action instance;
+        try {
+            instance = action.newInstance();
+        } catch (Throwable e) {
+            throw new FatalRegistryException("Failed to instantiate action", e);
+        }
+        addDefaultAction(target, instance);
+    }
+
+    public void addAction(Class<?> action) throws RegistryException {
+        String name = action.getSimpleName();
+        if (name.endsWith(ACTION_SUFFIX)) {
+            name = name.substring(0, name.length() - ACTION_SUFFIX.length());
+        }
+        name = StringUtils.uncapitalize(name);
+        addAction(name, action);
+    }
+
+    public void addDefaultAction(Class<? extends Action> action) throws RegistryException {
+        String name = action.getSimpleName();
+        if (name.endsWith(ACTION_SUFFIX)) {
+            name = name.substring(0, name.length() - ACTION_SUFFIX.length());
+        }
+        name = StringUtils.uncapitalize(name);
+        addDefaultAction(name, action);
+    }
+
+    public void addDefaultAction(String  target, Action action) throws RegistryException {
+        action.setDefaultAction(true);
+        addAction(target, action);
     }
 
     public void addEventListener(EventListener listener) throws RegistryException {
