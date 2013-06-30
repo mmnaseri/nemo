@@ -27,7 +27,7 @@
     <bean name="action:usage" class="com.agileapes.nemo.action.impl.UsageAction">
         <property name="defaultAction" value="true"/>
     </bean>
-    <bean class="com.agileapes.nemo.exec.TypoCorrectionAsset">
+    <bean class="com.agileapes.nemo.assets.TypoCorrectionAsset">
         <constructor-arg value="0.3"/>
     </bean>
     <bean class="com.agileapes.nemo.demo.ReadActionAlias"/>

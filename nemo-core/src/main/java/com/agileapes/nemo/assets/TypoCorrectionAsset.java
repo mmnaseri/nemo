@@ -1,4 +1,4 @@
-package com.agileapes.nemo.exec;
+package com.agileapes.nemo.assets;
 
 import com.agileapes.couteau.basics.api.Filter;
 import com.agileapes.couteau.basics.api.Mapper;
@@ -69,7 +69,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
             list = with(list).filter(new Filter<Map.Entry<Double, String>>() {
                 @Override
                 public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
-                    return rejected.contains(doubleStringEntry.getKey());
+                    return !rejected.contains(doubleStringEntry.getKey());
                 }
             }).list();
         } catch (Exception e) {

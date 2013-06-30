@@ -30,8 +30,7 @@ public class Runner {
             final ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("nemo/execution.xml");
             applicationContext.getBean(ExecutorContext.class).execute(args);
         } catch (Throwable e) {
-            System.err.println("error: " + new ExceptionMessage(e).getMessage());
-            e.printStackTrace(System.err);
+            System.err.println("error: " + new ExceptionMessage(e));
             System.exit(1);
         }
     }

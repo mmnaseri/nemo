@@ -40,7 +40,7 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
             log.info("Action is aware of its disassembler");
             final DisassembleStrategy disassembler = ((DisassemblerAware) action).getDisassembler();
             if (!disassembler.accepts(action)) {
-                log.error("Disassembler does not accept the action");
+                log.warn("Disassembler does not accept the action");
                 throw new ActionRefusedByStrategyException(disassembler.getClass());
             }
             return disassembler;
@@ -59,7 +59,7 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
         try {
             disassembleStrategy = get(strategy.getCanonicalName());
         } catch (NoSuchItemException e) {
-            log.error("Specified strategy " + strategy.getCanonicalName() + " has not been registered with the context");
+            log.warn("Specified strategy " + strategy.getCanonicalName() + " has not been registered with the context");
             throw new NoStrategyAttributedException();
         }
         if (disassembleStrategy.accepts(action)) {
@@ -69,7 +69,7 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                 log.error("Disassembler does not accept the action");
                 throw new ActionRefusedByStrategyException(strategy);
             } else {
-                log.error("Determined strategy does not accept action. Attempting to find candidates.");
+                log.warn("Determined strategy does not accept action. Attempting to find candidates.");
                 final Object[] candidates;
                 try {
                     candidates = with(getBeans()).filter(new Filter<DisassembleStrategy>() {
