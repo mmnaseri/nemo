@@ -8,11 +8,12 @@ import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.error.NoSuchOptionException;
 import com.agileapes.nemo.option.OptionDescriptor;
-import com.agileapes.nemo.util.CollectionDSL;
 import com.agileapes.nemo.util.ReflectionUtils;
 import com.agileapes.nemo.util.output.Grid;
 
 import java.util.*;
+
+import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 
 /**
  * This action is design as a built-in action that will provide thorough help messages for any given target/option
@@ -59,7 +60,7 @@ public class HelpAction extends Action implements ActionContextAware {
         }
         if (ALL.equals(target) && ALL.equals(option)) {
             //we need help for all the available actions
-            final List<String> names = CollectionDSL.sorted(actionContext.getActions().keySet());
+            final List<String> names = with(actionContext.getActions().keySet()).sort().list();
             final Grid grid = new Grid(" c3 * w60");
             grid.add("[x]", "Name", "Description");
             grid.line();
@@ -89,12 +90,12 @@ public class HelpAction extends Action implements ActionContextAware {
             final SmartAction action = (SmartAction) actionContext.get(target);
             output.println("Action: " + target);
             printHelp(action.getMetadata());
-            final List<OptionDescriptor> options = CollectionDSL.sorted((Set<OptionDescriptor>) action.getOptions(), new Comparator<OptionDescriptor>() {
+            final List<OptionDescriptor> options = with((Set<OptionDescriptor>) action.getOptions()).sort(new Comparator<OptionDescriptor>() {
                 @Override
                 public int compare(OptionDescriptor o1, OptionDescriptor o2) {
                     return o1.getName().compareTo(o2.getName());
                 }
-            });
+            }).list();
             if (!options.isEmpty()) {
                 output.println("Available options: ");
                 for (OptionDescriptor descriptor : options) {

@@ -1,6 +1,6 @@
 package com.agileapes.nemo.event.impl.events;
 
-import com.agileapes.nemo.event.Event;
+import com.agileapes.couteau.context.contract.Event;
 import com.agileapes.nemo.exec.ExecutorContext;
 
 import java.io.PrintStream;

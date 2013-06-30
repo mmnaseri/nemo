@@ -15,7 +15,7 @@
 
 package com.agileapes.nemo.value;
 
-import com.agileapes.nemo.contract.Context;
+import com.agileapes.couteau.context.contract.Context;
 
 /**
  * The reader context is designed as a repository of value readers that can handle all

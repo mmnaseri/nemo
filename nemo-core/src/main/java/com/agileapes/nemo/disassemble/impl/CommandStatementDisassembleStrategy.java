@@ -1,13 +1,13 @@
 package com.agileapes.nemo.disassemble.impl;
 
+import com.agileapes.couteau.basics.api.Processor;
+import com.agileapes.couteau.basics.collections.CollectionWrapper;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Command;
 import com.agileapes.nemo.api.Disassembler;
-import com.agileapes.nemo.contract.Callback;
 import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.error.CommandSyntaxError;
 import com.agileapes.nemo.error.OptionDefinitionException;
-import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.*;
 
@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 import static com.agileapes.nemo.util.ReflectionUtils.withFields;
 import static com.agileapes.nemo.util.ReflectionUtils.withMethods;
 
@@ -76,12 +77,15 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
         for (OptionDescriptor option : options) {
             final Accessor<?> accessor = getAccessor(action.getClass(), option.getName());
             final Properties properties = new Properties();
-            CollectionDSL.with(accessor.getAnnotations()).each(new Callback<Annotation>() {
-                @Override
-                public void perform(Annotation item) {
-                    new AnnotationPropertyBuilder(item).addTo(properties);
-                }
-            });
+            try {
+                with(accessor.getAnnotations()).each(new Processor<Annotation>() {
+                    @Override
+                    public void process(Annotation item) {
+                        new AnnotationPropertyBuilder(item).addTo(properties);
+                    }
+                });
+            } catch (Exception ignored) {
+            }
             try {
                 //noinspection unchecked
                 descriptors.add(new AccessibleFieldOptionDescriptor(option.getName(), option.getAlias(), option.getIndex(), option.isRequired(), accessor.getType(), accessor.get(action), properties, accessor));
@@ -93,9 +97,16 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
     }
 
     private Accessor<?> getAccessor(Class type, String property) throws OptionDefinitionException {
-        final Object[] fields = withFields(type).filter(new NonStaticFieldFilter()).filter(new FieldNameFilter(property)).array();
-        final Object[] getters = withMethods(type).filter(new GetterMethodFilter()).filter(new MethodPropertyFilter(property)).array();
-        final Object[] setters = withMethods(type).filter(new SetterMethodFilter()).filter(new MethodPropertyFilter(property)).array();
+        final Object[] fields;
+        final Object[] getters;
+        final Object[] setters;
+        try {
+            fields = withFields(type).filter(new NonStaticFieldFilter()).filter(new FieldNameFilter(property)).array();
+            getters = withMethods(type).filter(new GetterMethodFilter()).filter(new MethodPropertyFilter(property)).array();
+            setters = withMethods(type).filter(new SetterMethodFilter()).filter(new MethodPropertyFilter(property)).array();
+        } catch (Exception e) {
+            return null;
+        }
         Object reader = null;
         Object writer = null;
         if (getters.length > 0) {
@@ -142,10 +153,15 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
 
     @Override
     public void setOutput(final Object action, final PrintStream output) {
-        CollectionDSL.Wrapper<Field> fields = withFields(action.getClass()).filter(new FieldTypeFilter(PrintStream.class));
-        if (fields.count() > 1) {
-            fields = fields.filter(new FieldNameFilter("output"));
+        CollectionWrapper<Field> fields = null;
+        try {
+            fields = withFields(action.getClass()).filter(new FieldTypeFilter(PrintStream.class));
+            if (fields.count() > 1) {
+                fields = fields.filter(new FieldNameFilter("output"));
+            }
+        } catch (Exception ignored) {
         }
+        assert fields != null;
         if (fields.count() > 0) {
             final Field field = fields.first();
             try {
@@ -154,36 +170,42 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
             } catch (IllegalAccessException ignored) {
             }
         } else {
-            withMethods(action.getClass())
-                    .filter(new SetterMethodFilter())
-                    .filter(new MethodArgumentsFilter(PrintStream.class))
-                    .filter(new MethodPropertyFilter("output"))
-                    .each(new Callback<Method>() {
-                        @Override
-                        public void perform(Method item) {
-                            try {
+            try {
+                withMethods(action.getClass())
+                        .filter(new SetterMethodFilter())
+                        .filter(new MethodArgumentsFilter(PrintStream.class))
+                        .filter(new MethodPropertyFilter("output"))
+                        .each(new Processor<Method>() {
+                            @Override
+                            public void process(Method item) throws Exception {
                                 item.invoke(action, output);
-                            } catch (Throwable e) {
-                                throw new WrappedError(e);
                             }
-                        }
-                    });
+                        });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
     public Executable getExecutable(final Object action) {
-        final CollectionDSL.Wrapper<Method> wrapper = withMethods(action.getClass())
-                .filter(new MethodNameFilter("execute"))
-                .filter(new MethodReturnTypeFilter(void.class))
-                .filter(new MethodArgumentsFilter());
+        CollectionWrapper<Method> wrapper;
+        try {
+            wrapper = withMethods(action.getClass())
+                    .filter(new MethodNameFilter("execute"))
+                    .filter(new MethodReturnTypeFilter(void.class))
+                    .filter(new MethodArgumentsFilter());
+        } catch (Exception e) {
+            wrapper = with(new Method[0]);
+        }
         if (wrapper.isEmpty()) {
             throw new RuntimeException("Action has no executable method");
         }
+        final CollectionWrapper<Method> finalWrapper = wrapper;
         return new Executable() {
             @Override
             public void execute() throws Exception {
-                wrapper.first().invoke(action);
+                finalWrapper.first().invoke(action);
             }
         };
     }
@@ -191,13 +213,16 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
     @Override
     public Properties getMetadata(Object action) {
         final Properties properties = new Properties();
-        CollectionDSL.with(action.getClass().getAnnotations())
-                .each(new Callback<Annotation>() {
-                    @Override
-                    public void perform(Annotation item) {
-                        new AnnotationPropertyBuilder(item).addTo(properties);
-                    }
-                });
+        try {
+            with(action.getClass().getAnnotations())
+                    .each(new Processor<Annotation>() {
+                        @Override
+                        public void process(Annotation item) {
+                            new AnnotationPropertyBuilder(item).addTo(properties);
+                        }
+                    });
+        } catch (Exception ignored) {
+        }
         return properties;
     }
 

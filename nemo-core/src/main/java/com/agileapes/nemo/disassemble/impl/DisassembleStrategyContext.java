@@ -1,21 +1,21 @@
 package com.agileapes.nemo.disassemble.impl;
 
+import com.agileapes.couteau.basics.api.Filter;
+import com.agileapes.couteau.basics.api.Mapper;
+import com.agileapes.couteau.context.error.NoSuchItemException;
+import com.agileapes.couteau.context.error.RegistryException;
+import com.agileapes.couteau.context.impl.AbstractTypeSpecificContext;
 import com.agileapes.nemo.api.Disassembler;
-import com.agileapes.nemo.contract.Filter;
-import com.agileapes.nemo.contract.Mapper;
-import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.DisassemblerAware;
 import com.agileapes.nemo.error.ActionRefusedByStrategyException;
 import com.agileapes.nemo.error.NoStrategyAttributedException;
-import com.agileapes.nemo.error.NoSuchItemException;
-import com.agileapes.nemo.error.RegistryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
 
-import static com.agileapes.nemo.util.CollectionDSL.with;
+import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 
 /**
  * This is a context aware of all the strategies throughout the application. All strategies not registered with this context
@@ -24,14 +24,10 @@ import static com.agileapes.nemo.util.CollectionDSL.with;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/10, 17:17)
  */
-public class DisassembleStrategyContext extends AbstractThreadSafeContext<DisassembleStrategy> {
+public class DisassembleStrategyContext extends AbstractTypeSpecificContext<DisassembleStrategy> {
 
     public static final Class<AnnotatedFieldsDisassembleStrategy> DEFAULT_STRATEGY = AnnotatedFieldsDisassembleStrategy.class;
     private static final Log log = LogFactory.getLog(DisassembleStrategyContext.class);
-
-    public DisassembleStrategyContext() {
-        namesAreTypeSpecific = true;
-    }
 
     @SuppressWarnings("unchecked")
     public DisassembleStrategy<Object> getStrategy(final Object action) throws RegistryException {
@@ -70,32 +66,34 @@ public class DisassembleStrategyContext extends AbstractThreadSafeContext<Disass
                 throw new ActionRefusedByStrategyException(strategy);
             } else {
                 log.error("Determined strategy does not accept action. Attempting to find candidates.");
-                final DisassembleStrategy[] candidates = find(new Filter<DisassembleStrategy>() {
-                    @Override
-                    public boolean accepts(DisassembleStrategy item) {
-                        return item.accepts(action);
-                    }
-                });
+                final DisassembleStrategy[] candidates;
+                try {
+                    candidates = with(getBeans()).filter(new Filter<DisassembleStrategy>() {
+                        @Override
+                        public boolean accepts(DisassembleStrategy item) {
+                            return item.accepts(action);
+                        }
+                    }).array();
+                } catch (Exception ignored) {
+                    return null;
+                }
                 log.info("Found " + candidates.length + " candidates as disassembler strategy for action " + action);
                 if (candidates.length == 0) {
                     throw new NoStrategyAttributedException();
                 } else {
-                    log.debug("Candidates are " + Arrays.toString(with(candidates).map(new Mapper<DisassembleStrategy, String>() {
-                        @Override
-                        public String map(DisassembleStrategy item) {
-                            return item.getClass().getCanonicalName();
-                        }
-                    }).array()));
+                    try {
+                        log.debug("Candidates are " + Arrays.toString(with(candidates).map(new Mapper<DisassembleStrategy, String>() {
+                            @Override
+                            public String map(DisassembleStrategy item) {
+                                return item.getClass().getCanonicalName();
+                            }
+                        }).array()));
+                    } catch (Exception ignored) {}
                     log.info("Chose " + candidates[0].getClass().getCanonicalName() + " for action " + action);
                     return candidates[0];
                 }
             }
         }
-    }
-
-    @Override
-    protected Class<DisassembleStrategy> getType() {
-        return DisassembleStrategy.class;
     }
 
 }

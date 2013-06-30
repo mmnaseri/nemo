@@ -1,20 +1,17 @@
 package com.agileapes.nemo.exec;
 
-import com.agileapes.nemo.contract.Callback;
-import com.agileapes.nemo.contract.Mapper;
-import com.agileapes.nemo.event.EventListener;
+import com.agileapes.couteau.basics.api.Filter;
+import com.agileapes.couteau.basics.api.Mapper;
+import com.agileapes.couteau.basics.api.Processor;
+import com.agileapes.couteau.context.contract.EventListener;
 import com.agileapes.nemo.event.impl.events.ExecutionStartedEvent;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.PrintStream;
-import java.util.AbstractMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.agileapes.nemo.util.CollectionDSL.sorted;
-import static com.agileapes.nemo.util.CollectionDSL.with;
+import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 
 /**
  * This class is an event listener which is capable of determining whether or not a certain
@@ -26,7 +23,7 @@ import static com.agileapes.nemo.util.CollectionDSL.with;
  *
  * This listener is not included by default in the context, and in case the developer wishes
  * to provide such a facility to its users, it can be added to the context as an event listener
- * via {@link com.agileapes.nemo.exec.ExecutorContext#addEventListener(com.agileapes.nemo.event.EventListener)}
+ * via {@link com.agileapes.nemo.exec.ExecutorContext#addEventListener(com.agileapes.couteau.context.contract.EventListener)}
  *
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/17/13, 12:53 PM)
@@ -41,39 +38,73 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
 
     private static Map.Entry<Double, String> getClosestTarget(final String target, Set<String> names) {
         final AtomicLong factor = new AtomicLong(0);
-        with(names).each(new Callback<String>() {
-            @Override
-            public void perform(String item) {
-                factor.set(Math.max(item.length(), target.length()));
-            }
-        });
-        final Map<Double, String> map = with(names).key(new Mapper<String, Double>() {
-            @Override
-            public Double map(String item) {
-                return (double) StringUtils.getLevenshteinDistance(item, target) / factor.get();
-            }
-        });
+        try {
+            with(names).each(new Processor<String>() {
+                @Override
+                public void process(String item) {
+                    factor.set(Math.max(item.length(), target.length()));
+                }
+            });
+        } catch (Exception ignored) {
+            return null;
+        }
+        List<Map.Entry<Double,String>> list;
+        try {
+            list = with(names).map(new Mapper<String, Map.Entry<Double, String>>() {
+                @Override
+                public Map.Entry<Double, String> map(String item) {
+                    return new AbstractMap.SimpleEntry<Double, String>((double) StringUtils.getLevenshteinDistance(item, target) / factor.get(), item);
+                }
+            }).list();
+        } catch (Exception e) {
+            return null;
+        }
         final Set<Double> rejected = new HashSet<Double>();
-        for (Map.Entry<Double, String> entry : map.entrySet()) {
+        for (Map.Entry<Double, String> entry : list) {
             if (entry.getKey() > 0.6) {
                 rejected.add(entry.getKey());
             }
         }
-        with(rejected).each(new Callback<Double>() {
-            @Override
-            public void perform(Double item) {
-                map.remove(item);
-            }
-        });
-        if (map.isEmpty()) {
+        try {
+            list = with(list).filter(new Filter<Map.Entry<Double, String>>() {
+                @Override
+                public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
+                    return rejected.contains(doubleStringEntry.getKey());
+                }
+            }).list();
+        } catch (Exception e) {
             return null;
         }
-        final Double distance = with(sorted(map.keySet())).first();
-        return new AbstractMap.SimpleEntry<Double, String>(distance, map.get(distance));
+        if (list.isEmpty()) {
+            return null;
+        }
+        final Double distance;
+        try {
+            distance = with(list).map(new Mapper<Map.Entry<Double, String>, Double>() {
+                @Override
+                public Double map(Map.Entry<Double, String> doubleStringEntry) throws Exception {
+                    return doubleStringEntry.getKey();
+                }
+            }).sort().first();
+        } catch (Exception e) {
+            return null;
+        }
+        final String entry;
+        try {
+            entry = with(list).filter(new Filter<Map.Entry<Double, String>>() {
+                @Override
+                public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
+                    return doubleStringEntry.getKey().equals(distance);
+                }
+            }).first().getValue();
+        } catch (Exception e) {
+            return null;
+        }
+        return new AbstractMap.SimpleEntry<Double, String>(distance, entry);
     }
 
     @Override
-    public void onApplicationEvent(ExecutionStartedEvent event) {
+    public void onEvent(ExecutionStartedEvent event) {
         final String[] arguments = event.getArguments();
         if (arguments.length == 0 || arguments[0] == null || arguments[0].isEmpty() || arguments[0].startsWith("-")) {
             return;

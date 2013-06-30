@@ -1,11 +1,17 @@
 package com.agileapes.nemo.action.impl;
 
+import com.agileapes.couteau.context.contract.OrderedBean;
+import com.agileapes.couteau.context.error.FatalRegistryException;
+import com.agileapes.couteau.context.error.RegistryException;
+import com.agileapes.couteau.context.impl.AbstractThreadSafeContext;
+import com.agileapes.couteau.context.impl.BeanProcessorAdapter;
 import com.agileapes.nemo.action.Action;
-import com.agileapes.nemo.contract.impl.AbstractBeanProcessor;
-import com.agileapes.nemo.contract.impl.AbstractThreadSafeContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.disassemble.impl.DisassembleStrategyContext;
-import com.agileapes.nemo.error.*;
+import com.agileapes.nemo.error.ActionDefinitionException;
+import com.agileapes.nemo.error.NoDefaultActionException;
+import com.agileapes.nemo.error.NoStrategyAttributedException;
+import com.agileapes.nemo.error.OptionDefinitionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -37,7 +43,7 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
      * @param strategyContext    the strategy context
      */
     public ActionContext(final DisassembleStrategyContext strategyContext) {
-        addBeanProcessor(new AbstractBeanProcessor(Integer.MIN_VALUE) {
+        addBeanProcessor(new BeanProcessorAdapter<Object>(OrderedBean.HIGHEST_PRECEDENCE) {
             @Override
             public Object postProcessBeforeRegistration(Object bean, String beanName) throws RegistryException {
                 log.info("Registering action <" + beanName + "> of type " + bean.getClass());
@@ -110,11 +116,6 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
      */
     public Set<String> getTargets() {
         return Collections.unmodifiableSet(actions.keySet());
-    }
-
-    @Override
-    protected Class<Object> getType() {
-        return Object.class;
     }
 
 }

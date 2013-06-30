@@ -1,20 +1,20 @@
 package com.agileapes.nemo.action.impl;
 
+import com.agileapes.couteau.basics.api.Filter;
+import com.agileapes.couteau.basics.api.Processor;
+import com.agileapes.couteau.basics.collections.CollectionWrapper;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionContextAware;
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;
-import com.agileapes.nemo.contract.Callback;
-import com.agileapes.nemo.contract.Filter;
 import com.agileapes.nemo.disassemble.impl.AnnotatedFieldsDisassembleStrategy;
 import com.agileapes.nemo.option.OptionDescriptor;
-import com.agileapes.nemo.util.CollectionDSL;
 
 import java.io.PrintStream;
 import java.util.*;
 
-import static com.agileapes.nemo.util.CollectionDSL.with;
+import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 
 /**
  * The usage action, once invoked from the command line will outline the usages of the application by first
@@ -57,7 +57,8 @@ public class UsageAction extends Action implements ActionContextAware {
         }
         if (ALL.equals(target)) {
             output.print("Usage: %APPLICATION%");
-            final List<String> list = CollectionDSL.sorted(with(actionContext.getTargets())
+            final List<String> list = with(actionContext.getTargets())
+                    .sort()
                     .filter(new Filter<String>() {
                         @Override
                         public boolean accepts(String item) {
@@ -69,7 +70,7 @@ public class UsageAction extends Action implements ActionContextAware {
                             return true;
                         }
                     })
-                    .list());
+                    .list();
             if (!list.isEmpty()) {
                 output.print(" ");
                 for (Iterator<String> iterator = list.iterator(); iterator.hasNext(); ) {
@@ -102,7 +103,7 @@ public class UsageAction extends Action implements ActionContextAware {
                 }
             };
             output.print("%APPLICATION% " + target + " ");
-            final CollectionDSL.Wrapper<OptionDescriptor> flags = with(descriptors)
+            final CollectionWrapper<OptionDescriptor> flags = with(descriptors)
                     .filter(new Filter<OptionDescriptor>() {
                         @Override
                         public boolean accepts(OptionDescriptor item) {
@@ -118,7 +119,7 @@ public class UsageAction extends Action implements ActionContextAware {
                         }
                     })
                     .each(optionWriter);
-            final CollectionDSL.Wrapper<OptionDescriptor> indexed = with(descriptors)
+            final CollectionWrapper<OptionDescriptor> indexed = with(descriptors)
                     .filter(new Filter<OptionDescriptor>() {
                         @Override
                         public boolean accepts(OptionDescriptor item) {
@@ -140,7 +141,7 @@ public class UsageAction extends Action implements ActionContextAware {
         }
     }
 
-    private static abstract class DescriptorWriter implements Callback<OptionDescriptor> {
+    private static abstract class DescriptorWriter implements Processor<OptionDescriptor> {
 
         protected final PrintStream output;
 
@@ -149,7 +150,7 @@ public class UsageAction extends Action implements ActionContextAware {
         }
 
         @Override
-        public void perform(OptionDescriptor item) {
+        public void process(OptionDescriptor item) {
             if (!item.isRequired()) {
                 output.print("[");
             }

@@ -1,6 +1,6 @@
 package com.agileapes.nemo.util;
 
-import com.agileapes.nemo.contract.Filter;
+import com.agileapes.couteau.basics.api.Filter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

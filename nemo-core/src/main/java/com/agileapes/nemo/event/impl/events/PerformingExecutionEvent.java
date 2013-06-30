@@ -1,6 +1,6 @@
 package com.agileapes.nemo.event.impl.events;
 
-import com.agileapes.nemo.event.Event;
+import com.agileapes.couteau.context.contract.Event;
 import com.agileapes.nemo.exec.Execution;
 import com.agileapes.nemo.exec.Executor;
 

@@ -15,7 +15,8 @@
 
 package com.agileapes.nemo.util;
 
-import com.agileapes.nemo.contract.Filter;
+import com.agileapes.couteau.basics.api.Filter;
+import com.agileapes.couteau.basics.collections.CollectionWrapper;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -47,8 +48,11 @@ public abstract class ReflectionUtils {
         final List<Method> methods = new ArrayList<Method>();
         while (type != null) {
             for (Method method : type.getDeclaredMethods()) {
-                if (methodFilter.accepts(method)) {
-                    methods.add(method);
+                try {
+                    if (methodFilter.accepts(method)) {
+                        methods.add(method);
+                    }
+                } catch (Exception ignored) {
                 }
             }
             type = type.getSuperclass();
@@ -57,7 +61,7 @@ public abstract class ReflectionUtils {
     }
 
     /**
-     * Works the same as {@link #getMethods(Class, com.agileapes.nemo.contract.Filter)}
+     * Works the same as {@link #getMethods(Class, Filter)}
      * only for fields
      * @param type      the type to be introspected
      * @param filter    the filter deciding which fields should remain and which should go
@@ -70,8 +74,11 @@ public abstract class ReflectionUtils {
         final List<Field> fields = new ArrayList<Field>();
         while (type != null) {
             for (Field field : type.getDeclaredFields()) {
-                if (filter.accepts(field)) {
-                    fields.add(field);
+                try {
+                    if (filter.accepts(field)) {
+                        fields.add(field);
+                    }
+                } catch (Exception ignored) {
                 }
             }
             type = type.getSuperclass();
@@ -177,8 +184,8 @@ public abstract class ReflectionUtils {
         return value;
     }
 
-    public static CollectionDSL.Wrapper<Field> withFields(Class type) {
-        return CollectionDSL.with(getFields(type, new Filter<Field>() {
+    public static CollectionWrapper<Field> withFields(Class type) {
+        return CollectionWrapper.with(getFields(type, new Filter<Field>() {
             @Override
             public boolean accepts(Field item) {
                 return true;
@@ -186,8 +193,8 @@ public abstract class ReflectionUtils {
         }));
     }
 
-    public static CollectionDSL.Wrapper<Method> withMethods(Class type) {
-        return CollectionDSL.with(getMethods(type, new Filter<Method>() {
+    public static CollectionWrapper<Method> withMethods(Class type) {
+        return CollectionWrapper.with(getMethods(type, new Filter<Method>() {
             @Override
             public boolean accepts(Method item) {
                 return true;

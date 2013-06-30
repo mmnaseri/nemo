@@ -1,7 +1,7 @@
 package com.agileapes.nemo.util;
 
-import com.agileapes.nemo.contract.Callback;
-import com.agileapes.nemo.contract.Filter;
+import com.agileapes.couteau.basics.api.Filter;
+import com.agileapes.couteau.basics.api.Processor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -24,27 +24,27 @@ public class AnnotationPropertyBuilder {
 
     public AnnotationPropertyBuilder(final Annotation annotation) {
         name = "@" + annotation.annotationType().getCanonicalName();
-        ReflectionUtils.withMethods(annotation.annotationType())
-                .filter(new Filter<Method>() {
-                    @Override
-                    public boolean accepts(Method item) {
-                        return Modifier.isPublic(item.getModifiers()) && !Modifier.isStatic(item.getModifiers())
-                                && item.getParameterTypes().length == 0 && !item.getReturnType().equals(void.class);
-                    }
-                })
-                .each(new Callback<Method>() {
-                    @Override
-                    public void perform(Method item) {
-                        try {
+        try {
+            ReflectionUtils.withMethods(annotation.annotationType())
+                    .filter(new Filter<Method>() {
+                        @Override
+                        public boolean accepts(Method item) {
+                            return Modifier.isPublic(item.getModifiers()) && !Modifier.isStatic(item.getModifiers())
+                                    && item.getParameterTypes().length == 0 && !item.getReturnType().equals(void.class);
+                        }
+                    })
+                    .each(new Processor<Method>() {
+                        @Override
+                        public void process(Method item) throws Exception {
                             Object value = item.invoke(annotation);
                             if (value instanceof Annotation) {
                                 value = new AnnotationPropertyBuilder((Annotation) value).getValues();
                             }
                             values.put(item.getName(), value);
-                        } catch (Throwable ignored) {
                         }
-                    }
-                });
+                    });
+        } catch (Exception ignored) {
+        }
     }
 
     public Map<String, Object> getValues() {

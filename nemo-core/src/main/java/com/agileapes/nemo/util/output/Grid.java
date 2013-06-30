@@ -1,6 +1,6 @@
 package com.agileapes.nemo.util.output;
 
-import com.agileapes.nemo.contract.Filter;
+import com.agileapes.couteau.basics.api.Filter;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.agileapes.nemo.util.CollectionDSL.with;
+import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 
 /**
  * This is a visual asset that will facilitate the display of tabular information. The grid must be instantiated
@@ -199,12 +199,16 @@ public class Grid {
             }
         }
         this.containers = containers.toArray(new Container[containers.size()]);
-        this.expected = with(containers).filter(new Filter<Container>() {
-            @Override
-            public boolean accepts(Container item) {
-                return !(item instanceof StaticContainer);
-            }
-        }).count();
+        try {
+            this.expected = with(containers).filter(new Filter<Container>() {
+                @Override
+                public boolean accepts(Container item) {
+                    return !(item instanceof StaticContainer);
+                }
+            }).count();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
     }
 
     /**

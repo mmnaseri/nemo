@@ -15,7 +15,7 @@
 
 package com.agileapes.nemo.value.impl;
 
-import com.agileapes.nemo.util.ClassUtils;
+import com.agileapes.couteau.context.util.ClassUtils;
 import com.agileapes.nemo.value.ValueReader;
 
 /**

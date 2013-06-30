@@ -1,16 +1,14 @@
 package com.agileapes.nemo.disassemble.impl;
 
+import com.agileapes.couteau.basics.api.Processor;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Command;
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.api.Option;
-import com.agileapes.nemo.contract.Callback;
 import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.error.OptionDefinitionException;
-import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.AnnotationPropertyBuilder;
-import com.agileapes.nemo.util.CollectionDSL;
 import com.agileapes.nemo.util.FieldAnnotationFilter;
 import com.agileapes.nemo.util.NonStaticFieldFilter;
 import org.apache.commons.logging.Log;
@@ -23,6 +21,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 import static com.agileapes.nemo.util.ReflectionUtils.withFields;
 
 /**
@@ -41,34 +40,36 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
     protected Set<FieldOptionDescriptor> describe(final Action action) throws OptionDefinitionException {
         log.info("Attempting to extrapolate options for action: " + action);
         final HashSet<FieldOptionDescriptor> descriptors = new HashSet<FieldOptionDescriptor>();
+        log.info("Scanning fields for annotation @Option");
         try {
-            log.info("Scanning fields for annotation @Option");
             withFields(action.getClass())
                     .filter(new FieldAnnotationFilter(Option.class))
                     .filter(new NonStaticFieldFilter())
-                    .each(new Callback<Field>() {
+                    .each(new Processor<Field>() {
                         @Override
-                        public void perform(Field field) {
+                        public void process(Field field) throws Exception {
                             field.setAccessible(true);
                             final String propertyName = field.getName();
                             log.info("Extracting metadata for field " + propertyName);
                             final Option annotation = field.getAnnotation(Option.class);
+                            final Properties properties = new Properties();
                             try {
-                                final Properties properties = new Properties();
-                                CollectionDSL.with(field.getAnnotations()).each(new Callback<Annotation>() {
+                                with(field.getAnnotations()).each(new Processor<Annotation>() {
                                     @Override
-                                    public void perform(Annotation item) {
+                                    public void process(Annotation item) throws Exception {
                                         new AnnotationPropertyBuilder(item).addTo(properties);
                                     }
                                 });
-                                descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field, properties));
-                            } catch (Throwable e) {
-                                throw new WrappedError(e);
+                            } catch (Exception e) {
+                                throw new OptionDefinitionException("Could not get a description for option", e);
                             }
+                            descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field, properties));
                         }
                     });
-        } catch (WrappedError e) {
-            throw new OptionDefinitionException("Could not get a description for option", e.getWrappedError(Throwable.class));
+        } catch (Exception ignored) {
+            if (ignored instanceof OptionDefinitionException) {
+                throw (OptionDefinitionException) ignored;
+            }
         }
         return descriptors;
     }
@@ -111,13 +112,16 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
     @Override
     public Properties getMetadata(Action action) {
         final Properties properties = new Properties();
-        CollectionDSL.with(action.getClass().getAnnotations())
-                .each(new Callback<Annotation>() {
-                    @Override
-                    public void perform(Annotation item) {
-                        new AnnotationPropertyBuilder(item).addTo(properties);
-                    }
-                });
+        try {
+            with(action.getClass().getAnnotations())
+                    .each(new Processor<Annotation>() {
+                        @Override
+                        public void process(Annotation item) {
+                            new AnnotationPropertyBuilder(item).addTo(properties);
+                        }
+                    });
+        } catch (Exception ignored) {
+        }
         return properties;
     }
 
