@@ -29,6 +29,10 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
     public static final Class<AnnotatedFieldsDisassembleStrategy> DEFAULT_STRATEGY = AnnotatedFieldsDisassembleStrategy.class;
     private static final Log log = LogFactory.getLog(DisassembleStrategyContext.class);
 
+    public DisassembleStrategyContext() {
+        ready();
+    }
+
     @SuppressWarnings("unchecked")
     public DisassembleStrategy<Object> getStrategy(final Object action) throws RegistryException {
         log.info("Finding disassembler for action: " + action);
@@ -66,7 +70,7 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                 throw new ActionRefusedByStrategyException(strategy);
             } else {
                 log.error("Determined strategy does not accept action. Attempting to find candidates.");
-                final DisassembleStrategy[] candidates;
+                final Object[] candidates;
                 try {
                     candidates = with(getBeans()).filter(new Filter<DisassembleStrategy>() {
                         @Override
@@ -82,7 +86,12 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                     throw new NoStrategyAttributedException();
                 } else {
                     try {
-                        log.debug("Candidates are " + Arrays.toString(with(candidates).map(new Mapper<DisassembleStrategy, String>() {
+                        log.debug("Candidates are " + Arrays.toString(with(candidates).map(new Mapper<Object, DisassembleStrategy>() {
+                            @Override
+                            public DisassembleStrategy map(Object o) throws Exception {
+                                return (DisassembleStrategy) o;
+                            }
+                        }).map(new Mapper<DisassembleStrategy, String>() {
                             @Override
                             public String map(DisassembleStrategy item) {
                                 return item.getClass().getCanonicalName();
@@ -90,7 +99,7 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                         }).array()));
                     } catch (Exception ignored) {}
                     log.info("Chose " + candidates[0].getClass().getCanonicalName() + " for action " + action);
-                    return candidates[0];
+                    return (DisassembleStrategy<Object>) candidates[0];
                 }
             }
         }

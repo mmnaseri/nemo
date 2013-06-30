@@ -1,7 +1,7 @@
 package com.agileapes.nemo.events.translated;
 
-import com.agileapes.nemo.events.TranslatedEvent;
 import com.agileapes.nemo.exec.ExecutorContext;
+import org.springframework.context.ApplicationEvent;
 
 import java.io.PrintStream;
 
@@ -9,7 +9,7 @@ import java.io.PrintStream;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 3:56 PM)
  */
-public class ExecutionStartedEvent extends TranslatedEvent {
+public class ExecutionStartedEvent extends ApplicationEvent {
 
     private ExecutorContext executorContext;
     private String[] arguments;

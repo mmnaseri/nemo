@@ -1,14 +1,14 @@
 package com.agileapes.nemo.events.translated;
 
-import com.agileapes.nemo.events.TranslatedEvent;
 import com.agileapes.nemo.exec.Execution;
 import com.agileapes.nemo.exec.Executor;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 4:28 PM)
  */
-public class PerformingExecutionEvent extends TranslatedEvent {
+public class PerformingExecutionEvent extends ApplicationEvent {
 
     private Executor executor;
     private Execution execution;

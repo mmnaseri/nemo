@@ -3,6 +3,25 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <!-- Event Translation -->
+    <bean class="com.agileapes.couteau.context.spring.event.EventTranslator"/>
+    <bean class="com.agileapes.couteau.context.spring.event.impl.BuiltInEventsTranslationScheme"/>
+    <bean class="com.agileapes.nemo.events.impl.NemoTranslationScheme"/>
+    <bean class="com.agileapes.couteau.context.spring.event.impl.GenericTranslationScheme"/>
+
+    <!-- Spring Context Integration -->
+    <bean class="com.agileapes.couteau.context.spring.SpringContextConfigurator"/>
     <bean class="com.agileapes.nemo.exec.SpringExecutorContext"/>
+
+    <!-- Action Discovery -->
+    <bean class="com.agileapes.nemo.contract.impl.TypedActionDiscoverer">
+        <constructor-arg value="com.agileapes.nemo.action.Action"/>
+    </bean>
+    <bean class="com.agileapes.nemo.contract.impl.AnnotatedActionDiscoverer">
+        <constructor-arg value="com.agileapes.nemo.api.Disassembler"/>
+    </bean>
+    <bean class="com.agileapes.nemo.contract.impl.AnnotatedActionDiscoverer">
+        <constructor-arg value="com.agileapes.nemo.api.Command"/>
+    </bean>
 
 </beans>

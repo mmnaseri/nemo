@@ -1,13 +1,13 @@
 package com.agileapes.nemo.events.translated;
 
-import com.agileapes.nemo.events.TranslatedEvent;
 import com.agileapes.nemo.exec.ExecutorContext;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/16/13, 4:26 PM)
  */
-public class ExecutionErrorEvent extends TranslatedEvent {
+public class ExecutionErrorEvent extends ApplicationEvent {
 
     private ExecutorContext executorContext;
     private Exception error;

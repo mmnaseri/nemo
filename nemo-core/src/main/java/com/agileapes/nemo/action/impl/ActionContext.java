@@ -78,6 +78,7 @@ public class ActionContext extends AbstractThreadSafeContext<Object> {
                 return action;
             }
         });
+        ready();
     }
 
     /**

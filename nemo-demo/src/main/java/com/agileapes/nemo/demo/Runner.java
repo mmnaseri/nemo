@@ -27,9 +27,11 @@ public class Runner {
 
     public static void main(String[] args) throws Exception {
         try {
-            new ClassPathXmlApplicationContext("nemo/execution.xml").getBean(ExecutorContext.class).execute(args);
+            final ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("nemo/execution.xml");
+            applicationContext.getBean(ExecutorContext.class).execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + new ExceptionMessage(e).getMessage());
+            e.printStackTrace(System.err);
             System.exit(1);
         }
     }

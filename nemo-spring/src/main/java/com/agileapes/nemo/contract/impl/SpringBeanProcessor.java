@@ -1,7 +1,7 @@
 package com.agileapes.nemo.contract.impl;
 
-import com.agileapes.nemo.contract.BeanProcessor;
-import com.agileapes.nemo.error.RegistryException;
+import com.agileapes.couteau.context.contract.BeanProcessor;
+import com.agileapes.couteau.context.error.RegistryException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -17,9 +17,9 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  */
 public class SpringBeanProcessor implements BeanPostProcessor {
 
-    private final BeanProcessor beanProcessor;
+    private final BeanProcessor<Object> beanProcessor;
 
-    public SpringBeanProcessor(BeanProcessor beanProcessor) {
+    public SpringBeanProcessor(BeanProcessor<Object> beanProcessor) {
         this.beanProcessor = beanProcessor;
     }
 
@@ -35,7 +35,7 @@ public class SpringBeanProcessor implements BeanPostProcessor {
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         try {
-            return beanProcessor.postProcessBeforeDispense(bean, beanName);
+            return beanProcessor.postProcessBeforeAccess(bean, beanName);
         } catch (RegistryException e) {
             throw new FatalBeanException("Failed to process bean: " + beanName, e);
         }

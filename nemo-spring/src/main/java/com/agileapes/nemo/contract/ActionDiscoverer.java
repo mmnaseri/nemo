@@ -1,5 +1,6 @@
 package com.agileapes.nemo.contract;
 
+import com.agileapes.couteau.basics.api.Mapper;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.Collections;
