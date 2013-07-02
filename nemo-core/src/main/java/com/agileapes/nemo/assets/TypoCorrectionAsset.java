@@ -110,7 +110,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
             return;
         }
         final String target = arguments[0];
-        final Set<String> names = event.getExecutorContext().getActionRegistry().getActions().keySet();
+        final Set<String> names = event.getExecutorContext().getActionContext().getActions().keySet();
         if (names.contains(target)) {
             return;
         }

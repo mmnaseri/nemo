@@ -1,9 +1,11 @@
 package com.agileapes.nemo.exec;
 
 import com.agileapes.couteau.context.contract.Registry;
+import com.agileapes.couteau.context.error.FatalRegistryException;
 import com.agileapes.couteau.context.error.RegistryException;
 import com.agileapes.couteau.context.impl.AbstractThreadSafeContext;
 import com.agileapes.couteau.context.impl.BeanProcessorAdapter;
+import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionContextAware;
 import com.agileapes.nemo.action.impl.ActionContext;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
@@ -17,6 +19,7 @@ import com.agileapes.nemo.value.ValueReader;
 import com.agileapes.nemo.value.ValueReaderAware;
 import com.agileapes.nemo.value.ValueReaderContext;
 import com.agileapes.nemo.value.impl.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,24 +45,61 @@ import java.util.Arrays;
  */
 public class ExecutorContext extends AbstractThreadSafeContext<Object> {
 
+    public static final String ACTION_SUFFIX = "Action";
     private final DisassembleStrategyContext strategyContext;
     private final ValueReaderContext valueReaderContext;
-    private final ActionContext actionRegistry;
+    private final ActionContext actionContext;
     private final Executor executor;
     private final static Log log = LogFactory.getLog(ExecutorContext.class);
     private PrintStream output;
+
+    private static Object instantiateAction(Class<?> action) throws FatalRegistryException {
+        final Object instance;
+        try {
+            instance = action.newInstance();
+        } catch (Exception e) {
+            throw new FatalRegistryException("Failed to instantiate action", e);
+        }
+        return instance;
+    }
+
+    private static String getActionName(Class<?> action) {
+        String name = action.getSimpleName();
+        if (name.endsWith(ACTION_SUFFIX)) {
+            name = name.substring(0, name.length() - ACTION_SUFFIX.length());
+        }
+        name = StringUtils.uncapitalize(name);
+        return name;
+    }
+
+    public static ExecutorContext withActions(Object... actions) throws RegistryException {
+        final ExecutorContext executorContext = new ExecutorContext();
+        for (Object action : actions) {
+            executorContext.addAction(getActionName(action.getClass()), action);
+        }
+        return executorContext;
+    }
+
+    public static ExecutorContext withActions(Class<? extends Action> defaultAction, Class... actions) throws RegistryException {
+        final ExecutorContext executorContext = new ExecutorContext();
+        executorContext.addDefaultAction(defaultAction);
+        for (Class action : actions) {
+            executorContext.addAction(action);
+        }
+        return executorContext;
+    }
 
     public ExecutorContext() {
         log.info("Starting executor context ...");
         final long time = System.currentTimeMillis();
         valueReaderContext = new DefaultValueReaderContext();
         strategyContext = new DisassembleStrategyContext();
-        actionRegistry = new ActionContext(strategyContext);
-        executor = new Executor(actionRegistry, this);
+        actionContext = new ActionContext(strategyContext);
+        executor = new Executor(actionContext, this);
         try {
             registerBean(this, valueReaderContext);
             registerBean(this, strategyContext);
-            registerBean(this, actionRegistry);
+            registerBean(this, actionContext);
             addDisassembleStrategy(new AnnotatedFieldsDisassembleStrategy());
             addDisassembleStrategy(new CommandStatementDisassembleStrategy());
             addValueReader(new ClassValueReader());
@@ -79,16 +119,18 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
                 }
 
             });
-            addBeanProcessor(new BeanProcessorAdapter<Object>() {
+            final BeanProcessorAdapter<Object> actionContextAwareHandler = new BeanProcessorAdapter<Object>() {
                 @Override
                 public Object postProcessBeforeAccess(Object bean, String beanName) throws RegistryException {
                     if (bean instanceof ActionContextAware) {
                         log.info("Injecting action context to bean: " + beanName);
-                        ((ActionContextAware) bean).setActionContext(actionRegistry);
+                        ((ActionContextAware) bean).setActionContext(actionContext);
                     }
                     return bean;
                 }
-            });
+            };
+            addBeanProcessor(actionContextAwareHandler);
+            actionContext.addBeanProcessor(actionContextAwareHandler);
             addBeanProcessor(new BeanProcessorAdapter<Object>() {
                 @Override
                 public Object postProcessBeforeRegistration(Object bean, String beanName) throws RegistryException {
@@ -136,7 +178,28 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
 
     public void addAction(String target, Object action) throws RegistryException {
         log.info("Registering action target: " + target);
-        registerBean(actionRegistry, target, action);
+        registerBean(actionContext, target, action);
+    }
+
+    public void addAction(String target, Class<?> action) throws RegistryException{
+        addAction(target, instantiateAction(action));
+    }
+
+    public void addDefaultAction(String target, Action action) throws RegistryException {
+        action.setDefaultAction(true);
+        addAction(target, action);
+    }
+
+    public void addDefaultAction(String target, Class<? extends Action> action) throws RegistryException {
+        addDefaultAction(target, action.cast(instantiateAction(action)));
+    }
+
+    public void addAction(Class<?> action) throws RegistryException {
+        addAction(getActionName(action), action);
+    }
+
+    public void addDefaultAction(Class<? extends Action> action) throws RegistryException {
+        addDefaultAction(getActionName(action), action);
     }
 
     public DisassembleStrategyContext getStrategyContext() {
@@ -147,8 +210,8 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
         return valueReaderContext;
     }
 
-    public ActionContext getActionRegistry() {
-        return actionRegistry;
+    public ActionContext getActionContext() {
+        return actionContext;
     }
 
     public void execute(String... args) throws Exception {
