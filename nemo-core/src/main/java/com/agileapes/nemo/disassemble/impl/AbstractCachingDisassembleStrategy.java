@@ -1,5 +1,7 @@
 package com.agileapes.nemo.disassemble.impl;
 
+import com.agileapes.couteau.context.value.ValueReader;
+import com.agileapes.couteau.context.value.ValueReaderAware;
 import com.agileapes.nemo.contract.Cache;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import com.agileapes.nemo.error.InvalidArgumentSyntaxException;
@@ -7,8 +9,6 @@ import com.agileapes.nemo.error.NoSuchOptionException;
 import com.agileapes.nemo.error.OptionDefinitionException;
 import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
-import com.agileapes.nemo.value.ValueReader;
-import com.agileapes.nemo.value.ValueReaderAware;
 
 import java.util.Map;
 import java.util.Set;

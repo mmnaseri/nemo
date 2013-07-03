@@ -15,14 +15,9 @@
 
 package com.agileapes.nemo.demo;
 
-import com.agileapes.nemo.action.impl.HelpAction;
-import com.agileapes.nemo.action.impl.UsageAction;
-import com.agileapes.nemo.assets.TypoCorrectionAsset;
 import com.agileapes.nemo.exec.ExecutorContext;
 import com.agileapes.nemo.util.ExceptionMessage;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import static com.agileapes.nemo.exec.ExecutorContext.withActions;
 
 /**
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
