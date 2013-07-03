@@ -1,16 +1,13 @@
 package com.agileapes.nemo.exec;
 
 import com.agileapes.couteau.context.error.RegistryException;
-import com.agileapes.couteau.context.spring.ContextConfigurator;
-import com.agileapes.couteau.context.spring.SpringContextConfigurator;
+import com.agileapes.couteau.context.spring.SpringConfigurableContext;
 import com.agileapes.couteau.context.value.ValueReader;
 import com.agileapes.nemo.contract.ActionDiscoverer;
 import com.agileapes.nemo.disassemble.DisassembleStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.HashSet;
@@ -24,32 +21,11 @@ import java.util.Set;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (2013/6/12, 3:12)
  */
-public class SpringExecutorContext extends ExecutorContext implements BeanFactoryPostProcessor {
+public class SpringExecutorContext extends ExecutorContext implements SpringConfigurableContext<Object> {
 
     public static final String ACTION_PREFIX = "action:";
     private static final Log log = LogFactory.getLog(ExecutorContext.class.getCanonicalName().concat(".spring"));
     private final Set<ActionDiscoverer> discoverers = new HashSet<ActionDiscoverer>();
-
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        log.info("Starting to look through Spring's application context");
-        log.info("Looking for ways to discover new actions: ");
-        discoverers.addAll(beanFactory.getBeansOfType(ActionDiscoverer.class, false, true).values());
-        refresh();
-        final SpringContextConfigurator configurator = beanFactory.getBeansOfType(SpringContextConfigurator.class).values().iterator().next();
-        try {
-            configurator.configure(this, new ContextConfigurator<SpringExecutorContext>() {
-                @Override
-                public void configure(SpringExecutorContext context, ConfigurableListableBeanFactory beanFactory) {
-                    handleStrategies(beanFactory);
-                    handleValueReaders(beanFactory);
-                    handleActions(beanFactory);
-                }
-            });
-        } catch (RegistryException e) {
-            throw new FatalBeanException("Failed to register context with Spring", e);
-        }
-    }
 
     private Set<Object> handleStrategies(ConfigurableListableBeanFactory beanFactory) {
         final Set<Object> newItems = new HashSet<Object>();
@@ -111,6 +87,16 @@ public class SpringExecutorContext extends ExecutorContext implements BeanFactor
             log.info("Found " + found + " new action(s)");
         }
         return newItems;
+    }
+
+    @Override
+    public void configure(ConfigurableListableBeanFactory beanFactory) {
+        log.info("Starting to look through Spring's application context");
+        log.info("Looking for ways to discover new actions: ");
+        discoverers.addAll(beanFactory.getBeansOfType(ActionDiscoverer.class, false, true).values());
+        handleStrategies(beanFactory);
+        handleValueReaders(beanFactory);
+        handleActions(beanFactory);
     }
 
 }

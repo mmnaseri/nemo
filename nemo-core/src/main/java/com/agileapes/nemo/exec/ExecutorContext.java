@@ -1,10 +1,13 @@
 package com.agileapes.nemo.exec;
 
+import com.agileapes.couteau.context.contract.BeanProcessor;
+import com.agileapes.couteau.context.contract.Context;
 import com.agileapes.couteau.context.contract.Registry;
 import com.agileapes.couteau.context.error.FatalRegistryException;
 import com.agileapes.couteau.context.error.RegistryException;
 import com.agileapes.couteau.context.impl.AbstractThreadSafeContext;
 import com.agileapes.couteau.context.impl.BeanProcessorAdapter;
+import com.agileapes.couteau.context.util.ClassUtils;
 import com.agileapes.couteau.context.value.ValueReader;
 import com.agileapes.couteau.context.value.ValueReaderAware;
 import com.agileapes.couteau.context.value.ValueReaderContext;
@@ -119,7 +122,7 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
                 }
 
             });
-            final BeanProcessorAdapter<Object> actionContextAwareHandler = new BeanProcessorAdapter<Object>() {
+            addBeanProcessor(new BeanProcessorAdapter<Object>() {
                 @Override
                 public Object postProcessBeforeAccess(Object bean, String beanName) throws RegistryException {
                     if (bean instanceof ActionContextAware) {
@@ -128,9 +131,7 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
                     }
                     return bean;
                 }
-            };
-            addBeanProcessor(actionContextAwareHandler);
-            actionContext.addBeanProcessor(actionContextAwareHandler);
+            });
             addBeanProcessor(new BeanProcessorAdapter<Object>() {
                 @Override
                 public Object postProcessBeforeRegistration(Object bean, String beanName) throws RegistryException {
@@ -242,5 +243,27 @@ public class ExecutorContext extends AbstractThreadSafeContext<Object> {
 
     public PrintStream getOutput() {
         return output;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Context<Object> addBeanProcessor(BeanProcessor processor) {
+        final Class<?> processorType = ClassUtils.resolveTypeArgument(processor.getClass(), BeanProcessor.class);
+        if (strategyContext != null) {
+            if (processorType.isAssignableFrom(strategyContext.getRegistryType())) {
+                strategyContext.addBeanProcessor(processor);
+            }
+        }
+        if (valueReaderContext != null) {
+            if (processorType.isAssignableFrom(valueReaderContext.getRegistryType())) {
+                valueReaderContext.addBeanProcessor(processor);
+            }
+        }
+        if (actionContext != null) {
+            if (processorType.isAssignableFrom(actionContext.getRegistryType())) {
+                actionContext.addBeanProcessor(processor);
+            }
+        }
+        return super.addBeanProcessor(processor);
     }
 }

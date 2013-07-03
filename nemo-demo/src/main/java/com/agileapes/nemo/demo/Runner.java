@@ -27,18 +27,10 @@ public class Runner {
 
     public static void main(String[] args) throws Exception {
         try {
-//            to do this without spring:
-//            (
-//                    (ExecutorContext) withActions(UsageAction.class, HelloAction.class, HelpAction.class, ReadAction.class, ListAction.class)
-//                    .addEventListener(new TypoCorrectionAsset(0.3))
-//                    .addEventListener(new ReadActionAlias())
-//            )
-//                    .execute(args);
             final ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("nemo/execution.xml");
             applicationContext.getBean(ExecutorContext.class).execute(args);
         } catch (Throwable e) {
             System.err.println("error: " + new ExceptionMessage(e));
-            e.printStackTrace();
             System.exit(1);
         }
     }
