@@ -1,10 +1,12 @@
-package com.agileapes.nemo.action.impl;
+package com.agileapes.nemo.assets;
 
 import com.agileapes.couteau.basics.api.Filter;
 import com.agileapes.couteau.basics.api.Processor;
 import com.agileapes.couteau.basics.collections.CollectionWrapper;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.action.ActionContextAware;
+import com.agileapes.nemo.action.impl.ActionContext;
+import com.agileapes.nemo.action.impl.SmartAction;
 import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.api.Help;
 import com.agileapes.nemo.api.Option;

@@ -22,9 +22,9 @@
 
     <bean name="action:list" class="com.agileapes.nemo.demo.ListAction"/>
     <bean name="action:read" class="com.agileapes.nemo.demo.ReadAction"/>
-    <bean name="action:help" class="com.agileapes.nemo.action.impl.HelpAction"/>
+    <bean name="action:help" class="com.agileapes.nemo.assets.HelpAction"/>
     <bean name="action:hello" class="com.agileapes.nemo.demo.HelloAction"/>
-    <bean name="action:usage" class="com.agileapes.nemo.action.impl.UsageAction">
+    <bean name="action:usage" class="com.agileapes.nemo.assets.UsageAction">
         <property name="defaultAction" value="true"/>
     </bean>
     <bean class="com.agileapes.nemo.assets.TypoCorrectionAsset">
