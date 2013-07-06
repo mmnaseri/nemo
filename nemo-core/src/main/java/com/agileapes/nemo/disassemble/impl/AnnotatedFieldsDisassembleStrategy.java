@@ -1,6 +1,9 @@
 package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.couteau.basics.api.Processor;
+import com.agileapes.couteau.reflection.util.assets.AnnotatedElementFilter;
+import com.agileapes.couteau.reflection.util.assets.MemberModifierFilter;
+import com.agileapes.couteau.reflection.util.assets.Modifiers;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Command;
 import com.agileapes.nemo.api.Disassembler;
@@ -9,8 +12,6 @@ import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.error.OptionDefinitionException;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.AnnotationPropertyBuilder;
-import com.agileapes.nemo.util.FieldAnnotationFilter;
-import com.agileapes.nemo.util.NonStaticFieldFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -22,7 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
-import static com.agileapes.nemo.util.ReflectionUtils.withFields;
+import static com.agileapes.couteau.reflection.util.ReflectionUtils.withFields;
 
 /**
  * This strategy relies on the {@link Option} annotation being present on the fields of the action class, and the action
@@ -42,9 +43,10 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
         final HashSet<FieldOptionDescriptor> descriptors = new HashSet<FieldOptionDescriptor>();
         log.info("Scanning fields for annotation @Option");
         try {
+            //noinspection unchecked
             withFields(action.getClass())
-                    .filter(new FieldAnnotationFilter(Option.class))
-                    .filter(new NonStaticFieldFilter())
+                    .keep(new AnnotatedElementFilter(Option.class))
+                    .drop(new MemberModifierFilter(Modifiers.STATIC))
                     .each(new Processor<Field>() {
                         @Override
                         public void process(Field field) throws Exception {

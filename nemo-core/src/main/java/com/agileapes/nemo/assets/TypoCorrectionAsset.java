@@ -66,7 +66,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
             }
         }
         try {
-            list = with(list).filter(new Filter<Map.Entry<Double, String>>() {
+            list = with(list).keep(new Filter<Map.Entry<Double, String>>() {
                 @Override
                 public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
                     return !rejected.contains(doubleStringEntry.getKey());
@@ -91,7 +91,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
         }
         final String entry;
         try {
-            entry = with(list).filter(new Filter<Map.Entry<Double, String>>() {
+            entry = with(list).keep(new Filter<Map.Entry<Double, String>>() {
                 @Override
                 public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
                     return doubleStringEntry.getKey().equals(distance);

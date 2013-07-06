@@ -2,6 +2,7 @@ package com.agileapes.nemo.util;
 
 import com.agileapes.couteau.basics.api.Filter;
 import com.agileapes.couteau.basics.api.Processor;
+import com.agileapes.couteau.reflection.util.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -26,7 +27,7 @@ public class AnnotationPropertyBuilder {
         name = "@" + annotation.annotationType().getCanonicalName();
         try {
             ReflectionUtils.withMethods(annotation.annotationType())
-                    .filter(new Filter<Method>() {
+                    .keep(new Filter<Method>() {
                         @Override
                         public boolean accepts(Method item) {
                             return Modifier.isPublic(item.getModifiers()) && !Modifier.isStatic(item.getModifiers())

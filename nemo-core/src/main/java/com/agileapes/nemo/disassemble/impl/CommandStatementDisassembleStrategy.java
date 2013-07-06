@@ -2,6 +2,7 @@ package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.couteau.basics.api.Processor;
 import com.agileapes.couteau.basics.collections.CollectionWrapper;
+import com.agileapes.couteau.reflection.util.assets.*;
 import com.agileapes.nemo.action.Action;
 import com.agileapes.nemo.api.Command;
 import com.agileapes.nemo.api.Disassembler;
@@ -23,8 +24,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
-import static com.agileapes.nemo.util.ReflectionUtils.withFields;
-import static com.agileapes.nemo.util.ReflectionUtils.withMethods;
+import static com.agileapes.couteau.reflection.util.ReflectionUtils.withFields;
+import static com.agileapes.couteau.reflection.util.ReflectionUtils.withMethods;
 
 /**
  * This strategy will look at all actions which are annotated with {@link Command}. The @Command
@@ -101,9 +102,9 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
         final Object[] getters;
         final Object[] setters;
         try {
-            fields = withFields(type).filter(new NonStaticFieldFilter()).filter(new FieldNameFilter(property)).array();
-            getters = withMethods(type).filter(new GetterMethodFilter()).filter(new MethodPropertyFilter(property)).array();
-            setters = withMethods(type).filter(new SetterMethodFilter()).filter(new MethodPropertyFilter(property)).array();
+            fields = withFields(type).drop(new MemberModifierFilter(Modifiers.STATIC)).keep(new MemberNameFilter(property)).array();
+            getters = withMethods(type).keep(new GetterMethodFilter()).keep(new PropertyAccessorFilter(property)).array();
+            setters = withMethods(type).keep(new SetterMethodFilter()).keep(new PropertyAccessorFilter(property)).array();
         } catch (Exception e) {
             return null;
         }
@@ -155,9 +156,9 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
     public void setOutput(final Object action, final PrintStream output) {
         CollectionWrapper<Field> fields = null;
         try {
-            fields = withFields(action.getClass()).filter(new FieldTypeFilter(PrintStream.class));
+            fields = withFields(action.getClass()).keep(new FieldTypeFilter(PrintStream.class));
             if (fields.count() > 1) {
-                fields = fields.filter(new FieldNameFilter("output"));
+                fields = fields.keep(new MemberNameFilter("output"));
             }
         } catch (Exception ignored) {
         }
@@ -172,9 +173,9 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
         } else {
             try {
                 withMethods(action.getClass())
-                        .filter(new SetterMethodFilter())
-                        .filter(new MethodArgumentsFilter(PrintStream.class))
-                        .filter(new MethodPropertyFilter("output"))
+                        .keep(new SetterMethodFilter())
+                        .keep(new MethodArgumentsFilter(PrintStream.class))
+                        .keep(new PropertyAccessorFilter("output"))
                         .each(new Processor<Method>() {
                             @Override
                             public void process(Method item) throws Exception {
@@ -192,9 +193,9 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
         CollectionWrapper<Method> wrapper;
         try {
             wrapper = withMethods(action.getClass())
-                    .filter(new MethodNameFilter("execute"))
-                    .filter(new MethodReturnTypeFilter(void.class))
-                    .filter(new MethodArgumentsFilter());
+                    .keep(new MemberNameFilter("execute"))
+                    .keep(new MethodReturnTypeFilter(void.class))
+                    .keep(new MethodArgumentsFilter());
         } catch (Exception e) {
             wrapper = with(new Method[0]);
         }

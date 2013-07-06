@@ -82,6 +82,11 @@
             <artifactId>couteau-context-tools</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.agileapes.couteau</groupId>
+            <artifactId>couteau-reflection</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 </project>

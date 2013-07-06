@@ -200,7 +200,7 @@ public class Grid {
         }
         this.containers = containers.toArray(new Container[containers.size()]);
         try {
-            this.expected = with(containers).filter(new Filter<Container>() {
+            this.expected = with(containers).keep(new Filter<Container>() {
                 @Override
                 public boolean accepts(Container item) {
                     return !(item instanceof StaticContainer);

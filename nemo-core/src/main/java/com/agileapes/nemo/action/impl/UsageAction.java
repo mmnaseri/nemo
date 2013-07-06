@@ -59,7 +59,7 @@ public class UsageAction extends Action implements ActionContextAware {
             output.print("Usage: %APPLICATION%");
             final List<String> list = with(actionContext.getTargets())
                     .sort()
-                    .filter(new Filter<String>() {
+                    .keep(new Filter<String>() {
                         @Override
                         public boolean accepts(String item) {
                             for (Action action : actionContext.getInternalActions()) {
@@ -104,7 +104,7 @@ public class UsageAction extends Action implements ActionContextAware {
             };
             output.print("%APPLICATION% " + target + " ");
             final CollectionWrapper<OptionDescriptor> flags = with(descriptors)
-                    .filter(new Filter<OptionDescriptor>() {
+                    .keep(new Filter<OptionDescriptor>() {
                         @Override
                         public boolean accepts(OptionDescriptor item) {
                             return item.isFlag();
@@ -112,7 +112,7 @@ public class UsageAction extends Action implements ActionContextAware {
                     });
             flags.each(optionWriter);
             with(descriptors)
-                    .filter(new Filter<OptionDescriptor>() {
+                    .keep(new Filter<OptionDescriptor>() {
                         @Override
                         public boolean accepts(OptionDescriptor item) {
                             return !item.isFlag() && item.getIndex() == null;
@@ -120,7 +120,7 @@ public class UsageAction extends Action implements ActionContextAware {
                     })
                     .each(optionWriter);
             final CollectionWrapper<OptionDescriptor> indexed = with(descriptors)
-                    .filter(new Filter<OptionDescriptor>() {
+                    .keep(new Filter<OptionDescriptor>() {
                         @Override
                         public boolean accepts(OptionDescriptor item) {
                             return item.getIndex() != null;

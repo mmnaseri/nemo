@@ -72,7 +72,7 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                 log.warn("Determined strategy does not accept action. Attempting to find candidates.");
                 final Object[] candidates;
                 try {
-                    candidates = with(getBeans()).filter(new Filter<DisassembleStrategy>() {
+                    candidates = with(getBeans()).keep(new Filter<DisassembleStrategy>() {
                         @Override
                         public boolean accepts(DisassembleStrategy item) {
                             return item.accepts(action);

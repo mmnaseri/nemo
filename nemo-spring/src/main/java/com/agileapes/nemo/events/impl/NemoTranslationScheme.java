@@ -2,7 +2,7 @@ package com.agileapes.nemo.events.impl;
 
 import com.agileapes.couteau.context.contract.Event;
 import com.agileapes.couteau.context.spring.event.impl.AbstractMappedEventsTranslationScheme;
-import com.agileapes.couteau.context.util.ClassUtils;
+import com.agileapes.couteau.reflection.util.ClassUtils;
 
 /**
  * This translation scheme will use reflection to translate all events registered with nemo (or any
