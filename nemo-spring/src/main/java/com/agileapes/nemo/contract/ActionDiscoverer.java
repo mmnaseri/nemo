@@ -1,6 +1,6 @@
 package com.agileapes.nemo.contract;
 
-import com.agileapes.couteau.basics.api.Mapper;
+import com.agileapes.couteau.basics.api.Transformer;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.Collections;
@@ -13,7 +13,7 @@ import java.util.Map;
  * @author Mohammad Milad Naseri (m.m.naseri@gmail.com)
  * @since 1.0 (6/15/13, 4:57 PM)
  */
-public abstract class ActionDiscoverer implements Mapper<ConfigurableListableBeanFactory, Map<String, Object>> {
+public abstract class ActionDiscoverer implements Transformer<ConfigurableListableBeanFactory, Map<String, Object>> {
 
     @Override
     public Map<String, Object> map(ConfigurableListableBeanFactory factory) {

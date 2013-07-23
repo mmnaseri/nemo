@@ -1,7 +1,7 @@
 package com.agileapes.nemo.disassemble.impl;
 
 import com.agileapes.couteau.basics.api.Filter;
-import com.agileapes.couteau.basics.api.Mapper;
+import com.agileapes.couteau.basics.api.Transformer;
 import com.agileapes.couteau.context.error.NoSuchItemException;
 import com.agileapes.couteau.context.error.RegistryException;
 import com.agileapes.couteau.context.impl.AbstractTypeSpecificContext;
@@ -86,12 +86,12 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                     throw new NoStrategyAttributedException();
                 } else {
                     try {
-                        log.debug("Candidates are " + Arrays.toString(with(candidates).map(new Mapper<Object, DisassembleStrategy>() {
+                        log.debug("Candidates are " + Arrays.toString(with(candidates).transform(new Transformer<Object, DisassembleStrategy>() {
                             @Override
                             public DisassembleStrategy map(Object o) throws Exception {
                                 return (DisassembleStrategy) o;
                             }
-                        }).map(new Mapper<DisassembleStrategy, String>() {
+                        }).transform(new Transformer<DisassembleStrategy, String>() {
                             @Override
                             public String map(DisassembleStrategy item) {
                                 return item.getClass().getCanonicalName();

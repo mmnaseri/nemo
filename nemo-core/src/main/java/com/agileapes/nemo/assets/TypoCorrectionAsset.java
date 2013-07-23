@@ -1,8 +1,8 @@
 package com.agileapes.nemo.assets;
 
 import com.agileapes.couteau.basics.api.Filter;
-import com.agileapes.couteau.basics.api.Mapper;
 import com.agileapes.couteau.basics.api.Processor;
+import com.agileapes.couteau.basics.api.Transformer;
 import com.agileapes.couteau.context.contract.EventListener;
 import com.agileapes.nemo.event.impl.events.ExecutionStartedEvent;
 import org.apache.commons.lang.StringUtils;
@@ -50,7 +50,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
         }
         List<Map.Entry<Double,String>> list;
         try {
-            list = with(names).map(new Mapper<String, Map.Entry<Double, String>>() {
+            list = with(names).transform(new Transformer<String, Map.Entry<Double, String>>() {
                 @Override
                 public Map.Entry<Double, String> map(String item) {
                     return new AbstractMap.SimpleEntry<Double, String>((double) StringUtils.getLevenshteinDistance(item, target) / factor.get(), item);
@@ -66,6 +66,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
             }
         }
         try {
+            //noinspection unchecked
             list = with(list).keep(new Filter<Map.Entry<Double, String>>() {
                 @Override
                 public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
@@ -80,7 +81,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
         }
         final Double distance;
         try {
-            distance = with(list).map(new Mapper<Map.Entry<Double, String>, Double>() {
+            distance = with(list).transform(new Transformer<Map.Entry<Double, String>, Double>() {
                 @Override
                 public Double map(Map.Entry<Double, String> doubleStringEntry) throws Exception {
                     return doubleStringEntry.getKey();
@@ -91,6 +92,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
         }
         final String entry;
         try {
+            //noinspection unchecked
             entry = with(list).keep(new Filter<Map.Entry<Double, String>>() {
                 @Override
                 public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
