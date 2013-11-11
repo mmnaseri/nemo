@@ -1,12 +1,12 @@
 package com.agileapes.nemo.util;
 
-import com.agileapes.couteau.basics.api.Filter;
 import com.agileapes.couteau.basics.api.Processor;
 import com.agileapes.couteau.reflection.util.ReflectionUtils;
+import com.agileapes.couteau.reflection.util.assets.GetterMethodFilter;
+import com.agileapes.nemo.error.WrappedError;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,27 +25,23 @@ public class AnnotationPropertyBuilder {
 
     public AnnotationPropertyBuilder(final Annotation annotation) {
         name = "@" + annotation.annotationType().getCanonicalName();
-        try {
-            ReflectionUtils.withMethods(annotation.annotationType())
-                    .keep(new Filter<Method>() {
-                        @Override
-                        public boolean accepts(Method item) {
-                            return Modifier.isPublic(item.getModifiers()) && !Modifier.isStatic(item.getModifiers())
-                                    && item.getParameterTypes().length == 0 && !item.getReturnType().equals(void.class);
+        ReflectionUtils.withMethods(annotation.annotationType())
+                .keep(new GetterMethodFilter(true))
+                .each(new Processor<Method>() {
+                    @Override
+                    public void process(Method item) {
+                        Object value = null;
+                        try {
+                            value = item.invoke(annotation);
+                        } catch (Exception e) {
+                            throw new WrappedError(e);
                         }
-                    })
-                    .each(new Processor<Method>() {
-                        @Override
-                        public void process(Method item) throws Exception {
-                            Object value = item.invoke(annotation);
-                            if (value instanceof Annotation) {
-                                value = new AnnotationPropertyBuilder((Annotation) value).getValues();
-                            }
-                            values.put(item.getName(), value);
+                        if (value instanceof Annotation) {
+                            value = new AnnotationPropertyBuilder((Annotation) value).getValues();
                         }
-                    });
-        } catch (Exception ignored) {
-        }
+                        values.put(item.getName(), value);
+                    }
+                });
     }
 
     public Map<String, Object> getValues() {

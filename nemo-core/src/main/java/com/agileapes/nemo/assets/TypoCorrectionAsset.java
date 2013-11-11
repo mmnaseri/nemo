@@ -69,7 +69,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
             //noinspection unchecked
             list = with(list).keep(new Filter<Map.Entry<Double, String>>() {
                 @Override
-                public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
+                public boolean accepts(Map.Entry<Double, String> doubleStringEntry) {
                     return !rejected.contains(doubleStringEntry.getKey());
                 }
             }).list();
@@ -83,7 +83,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
         try {
             distance = with(list).transform(new Transformer<Map.Entry<Double, String>, Double>() {
                 @Override
-                public Double map(Map.Entry<Double, String> doubleStringEntry) throws Exception {
+                public Double map(Map.Entry<Double, String> doubleStringEntry) {
                     return doubleStringEntry.getKey();
                 }
             }).sort().first();
@@ -95,7 +95,7 @@ public class TypoCorrectionAsset implements EventListener<ExecutionStartedEvent>
             //noinspection unchecked
             entry = with(list).keep(new Filter<Map.Entry<Double, String>>() {
                 @Override
-                public boolean accepts(Map.Entry<Double, String> doubleStringEntry) throws Exception {
+                public boolean accepts(Map.Entry<Double, String> doubleStringEntry) {
                     return doubleStringEntry.getKey().equals(distance);
                 }
             }).first().getValue();

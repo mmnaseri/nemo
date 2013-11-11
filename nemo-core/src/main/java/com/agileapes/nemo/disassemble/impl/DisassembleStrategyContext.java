@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static com.agileapes.couteau.basics.collections.CollectionWrapper.with;
 
@@ -70,14 +71,15 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                 throw new ActionRefusedByStrategyException(strategy);
             } else {
                 log.warn("Determined strategy does not accept action. Attempting to find candidates.");
-                final Object[] candidates;
+                final DisassembleStrategy<?>[] candidates;
                 try {
-                    candidates = with(getBeans()).keep(new Filter<DisassembleStrategy>() {
+                    List<DisassembleStrategy> list = with(getBeans()).keep(new Filter<DisassembleStrategy>() {
                         @Override
                         public boolean accepts(DisassembleStrategy item) {
                             return item.accepts(action);
                         }
-                    }).array();
+                    }).list();
+                    candidates = list.toArray(new DisassembleStrategy[list.size()]);
                 } catch (Exception ignored) {
                     return null;
                 }
@@ -86,17 +88,12 @@ public class DisassembleStrategyContext extends AbstractTypeSpecificContext<Disa
                     throw new NoStrategyAttributedException();
                 } else {
                     try {
-                        log.debug("Candidates are " + Arrays.toString(with(candidates).transform(new Transformer<Object, DisassembleStrategy>() {
-                            @Override
-                            public DisassembleStrategy map(Object o) throws Exception {
-                                return (DisassembleStrategy) o;
-                            }
-                        }).transform(new Transformer<DisassembleStrategy, String>() {
+                        log.debug("Candidates are " + Arrays.toString(with(candidates).transform(new Transformer<DisassembleStrategy, String>() {
                             @Override
                             public String map(DisassembleStrategy item) {
                                 return item.getClass().getCanonicalName();
                             }
-                        }).array()));
+                        }).list().toArray()));
                     } catch (Exception ignored) {}
                     log.info("Chose " + candidates[0].getClass().getCanonicalName() + " for action " + action);
                     return (DisassembleStrategy<Object>) candidates[0];

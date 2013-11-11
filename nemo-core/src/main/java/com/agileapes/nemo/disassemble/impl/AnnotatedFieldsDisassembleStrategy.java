@@ -10,6 +10,7 @@ import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.api.Option;
 import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.error.OptionDefinitionException;
+import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
 import com.agileapes.nemo.util.AnnotationPropertyBuilder;
 import org.apache.commons.logging.Log;
@@ -42,37 +43,35 @@ public class AnnotatedFieldsDisassembleStrategy extends AbstractCachingDisassemb
         log.info("Attempting to extrapolate options for action: " + action);
         final HashSet<FieldOptionDescriptor> descriptors = new HashSet<FieldOptionDescriptor>();
         log.info("Scanning fields for annotation @Option");
-        try {
-            //noinspection unchecked
-            withFields(action.getClass())
-                    .keep(new AnnotatedElementFilter(Option.class))
-                    .drop(new MemberModifierFilter(Modifiers.STATIC))
-                    .each(new Processor<Field>() {
-                        @Override
-                        public void process(Field field) throws Exception {
-                            field.setAccessible(true);
-                            final String propertyName = field.getName();
-                            log.info("Extracting metadata for field " + propertyName);
-                            final Option annotation = field.getAnnotation(Option.class);
-                            final Properties properties = new Properties();
-                            try {
-                                with(field.getAnnotations()).each(new Processor<Annotation>() {
-                                    @Override
-                                    public void process(Annotation item) throws Exception {
-                                        new AnnotationPropertyBuilder(item).addTo(properties);
-                                    }
-                                });
-                            } catch (Exception e) {
-                                throw new OptionDefinitionException("Could not get a description for option", e);
-                            }
-                            descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field, properties));
+        //noinspection unchecked
+        withFields(action.getClass())
+                .keep(new AnnotatedElementFilter(Option.class))
+                .drop(new MemberModifierFilter(Modifiers.STATIC))
+                .each(new Processor<Field>() {
+                    @Override
+                    public void process(Field field) {
+                        field.setAccessible(true);
+                        final String propertyName = field.getName();
+                        log.info("Extracting metadata for field " + propertyName);
+                        final Option annotation = field.getAnnotation(Option.class);
+                        final Properties properties = new Properties();
+                        try {
+                            with(field.getAnnotations()).each(new Processor<Annotation>() {
+                                @Override
+                                public void process(Annotation item) {
+                                    new AnnotationPropertyBuilder(item).addTo(properties);
+                                }
+                            });
+                        } catch (Exception e) {
+                            throw new OptionDefinitionException("Could not get a description for option", e);
                         }
-                    });
-        } catch (Exception ignored) {
-            if (ignored instanceof OptionDefinitionException) {
-                throw (OptionDefinitionException) ignored;
-            }
-        }
+                        try {
+                            descriptors.add(new FieldOptionDescriptor(propertyName, annotation.alias() != ' ' ? annotation.alias() : null, annotation.index() >= 0 ? annotation.index() : null, annotation.required(), field.getType(), field.get(action), field, properties));
+                        } catch (IllegalAccessException e) {
+                            throw new WrappedError(e);
+                        }
+                    }
+                });
         return descriptors;
     }
 

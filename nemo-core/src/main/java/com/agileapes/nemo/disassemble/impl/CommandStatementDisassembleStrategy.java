@@ -9,8 +9,9 @@ import com.agileapes.nemo.api.Disassembler;
 import com.agileapes.nemo.contract.Executable;
 import com.agileapes.nemo.error.CommandSyntaxError;
 import com.agileapes.nemo.error.OptionDefinitionException;
+import com.agileapes.nemo.error.WrappedError;
 import com.agileapes.nemo.option.OptionDescriptor;
-import com.agileapes.nemo.util.*;
+import com.agileapes.nemo.util.AnnotationPropertyBuilder;
 
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
@@ -102,9 +103,9 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
         final Object[] getters;
         final Object[] setters;
         try {
-            fields = withFields(type).drop(new MemberModifierFilter(Modifiers.STATIC)).keep(new MemberNameFilter(property)).array();
-            getters = withMethods(type).keep(new GetterMethodFilter()).keep(new PropertyAccessorFilter(property)).array();
-            setters = withMethods(type).keep(new SetterMethodFilter()).keep(new PropertyAccessorFilter(property)).array();
+            fields = withFields(type).drop(new MemberModifierFilter(Modifiers.STATIC)).keep(new MemberNameFilter(property)).list().toArray();
+            getters = withMethods(type).keep(new GetterMethodFilter()).keep(new PropertyAccessorFilter(property)).list().toArray();
+            setters = withMethods(type).keep(new SetterMethodFilter()).keep(new PropertyAccessorFilter(property)).list().toArray();
         } catch (Exception e) {
             return null;
         }
@@ -178,8 +179,12 @@ public class CommandStatementDisassembleStrategy extends AbstractCachingDisassem
                         .keep(new PropertyAccessorFilter("output"))
                         .each(new Processor<Method>() {
                             @Override
-                            public void process(Method item) throws Exception {
-                                item.invoke(action, output);
+                            public void process(Method item) {
+                                try {
+                                    item.invoke(action, output);
+                                } catch (Exception e) {
+                                    throw new WrappedError(e);
+                                }
                             }
                         });
             } catch (Exception e) {
